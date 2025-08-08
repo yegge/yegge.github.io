@@ -1,1 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music Catalog</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Firebase SDKs -->
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, onSnapshot, addDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+        // --- IMPORTANT: PASTE YOUR FIREBASE CONFIGURATION OBJECT HERE ---
+        const firebaseConfig = {
+    apiKey: "AIzaSyD9N1hn02_a70RI3-6M2DY6sUjYWrkZEAE",
+    authDomain: "music-catalog-de666.firebaseapp.com",
+    projectId: "music-catalog-de666",
+    storageBucket: "music-catalog-de666.firebasestorage.app",
+    messagingSenderId: "963393761489",
+    appId: "1:963393761489:web:ebee85ee733468dd26d5f0",
+    measurementId: "G-4H2R6BLL1T"
+        };
+        // ----------------------------------------------------------------
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // --- APPLICATION LOGIC ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const albumList = document.getElementById('album-list');
+            const albumModal = document.getElementById('album-modal');
+            const albumModalBackdrop = document.getElementById('album-modal-backdrop');
+            const trackModal = document.getElementById('track-modal');
+            const trackModalBackdrop = document.getElementById('track-modal-backdrop');
+            const showAlbumFormBtn = document.getElementById('show-album-form');
+            const cancelAlbumBtn = document.getElementById('cancel-album');
+            const cancelTrackBtn = document.getElementById('cancel-track');
+            const albumForm = document.getElementById('album-form');
+            const trackForm = document.getElementById('track-form');
+
+            // --- Modal Controls ---
+            function showModal(modal, backdrop) {
+                modal.style.display = 'block';
+                backdrop.style.display = 'block';
+            }
+
+            function hideModal(modal, backdrop) {
+                modal.style.display = 'none';
+                backdrop.style.display = 'none';
+            }
+
+            showAlbumFormBtn.addEventListener('click', () => {
+                albumForm.reset();
+                showModal(albumModal, albumModalBackdrop);
+            });
+
+            cancelAlbumBtn.addEventListener('click', () => hideModal(albumModal, albumModalBackdrop));
+            cancelTrackBtn.addEventListener('click', () => hideModal(trackModal, trackModalBackdrop));
+            albumModalBackdrop.addEventListener('click', () => hideModal(albumModal, albumModalBackdrop));
+            trackModalBackdrop.addEventListener('click', () => hideModal(trackModal, trackModalBackdrop));
+
+            // --- Data Handling with Firebase ---
+            albumForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const formData = new FormData(albumForm);
+                const newAlbum = {
+                    ARTWORK: formData.get('artwork'),
+                    ALBUM_NAME: formData.get('albumName'),
+                    ALBUM_TYPE: formData.get('albumType'),
+                    ALBUM_ARTIST: formData.get('albumArtist'),
+                    CATALOG_NO: formData.get('catalogNo'),
+                    UPC: formData.get('upc'),
+                    DISTRIBUTOR: formData.get('distributor'),
+                    LABEL: formData.get('label'),
+                    UPLOADED: formData.get('uploaded'),
+                    PREORDER: formData.get('preorder'),
+                    RELEASE_DATE: formData.get('releaseDate'),
+                    MBID: formData.get('mbid'),
+                    VINYL_CD_RELEASE_DATE: formData.get('vinylCdReleaseDate'),
+                    PRODUCER: formData.get('producer'),
+                    ENGINEER: formData.get('engineer'),
+                    MASTERING: formData.get('mastering'),
+                    KEY_CONTRIBUTORS: formData.get('keyContributors'),
+                };
+                try {
+                    await addDoc(collection(db, "albums"), newAlbum);
+                    hideModal(albumModal, albumModalBackdrop);
+                } catch (error) {
+                    console.error("Error adding album: ", error);
+                    // You could show an error message to the user here
+                }
+            });
+
+            trackForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const formData = new FormData(trackForm);
+                const newTrack = {
+                    Album_ID: formData.get('albumId'), // This will be the Firestore document ID of the album
+                    Track_No: parseInt(formData.get('trackNo')),
+                    Track_Name: formData.get('trackName'),
+                    Artist_Name: formData.get('artistName'),
+                    Composer: formData.get('composers'),
+                    Key_Contributors: formData.get('keyContributors'),
+                    ISRC: formData.get('isrc'),
+                    Track_Duration: formData.get('trackDuration'),
+                    Apple_Music: formData.get('appleMusic'),
+                    SPOTIFY: formData.get('spotify'),
+                    YouTubeMusic: formData.get('youtubeMusic'),
+                    iTunes: formData.get('itunes'),
+                    STREAM: formData.get('stream'),
+                };
+                 try {
+                    await addDoc(collection(db, "tracks"), newTrack);
+                    hideModal(trackModal, trackModalBackdrop);
+                } catch (error) {
+                    console.error("Error adding track: ", error);
+                }
+            });
+
+            // --- Real-time Render Function ---
+            function listenForData() {
+                const albumsRef = collection(db, "albums");
+                const tracksRef = collection(db, "tracks");
+
+                onSnapshot(albumsRef, (albumSnapshot) => {
+                    const albums = albumSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    
+                    onSnapshot(tracksRef, (trackSnapshot) => {
+                        const tracks = trackSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                        render(albums, tracks);
+                    });
+                });
+            }
+
+            function render(albums, tracks) {
+                albumList.innerHTML = ''; // Clear existing content
+                if (!albums || albums.length === 0) {
+                    albumList.innerHTML = `<p class="text-center text-gray-400">No albums yet. Add one to get started!</p>`;
+                    return;
+                }
+
+                albums.forEach(album => {
+                    const albumTracks = tracks
+                        .filter(track => track.Album_ID === album.id) // Match by Firestore document ID
+                        .sort((a, b) => a.Track_No - b.Track_No);
+
+                    const albumElement = document.createElement('div');
+                    albumElement.className = 'bg-gray-900/50 rounded-lg shadow-2xl overflow-hidden';
+                    albumElement.innerHTML = `
+                        <div class="md:flex">
+                            <div class="md:w-1/3">
+                                <img src="${album.ARTWORK || 'https://placehold.co/500x500/1e293b/ffffff?text=Album+Art'}" alt="${album.ALBUM_NAME} Artwork" class="w-full h-full object-cover" onerror="this.onerror=null;this.src='https://placehold.co/500x500/1e293b/ffffff?text=Image+Not+Found';">
+                            </div>
+                            <div class="p-6 md:p-8 md:w-2/3">
+                                <h2 class="text-3xl font-bold text-white">${album.ALBUM_NAME}</h2>
+                                <p class="text-lg text-blue-400">${album.ALBUM_ARTIST}</p>
+                                <span class="inline-block bg-blue-500 text-white text-xs font-semibold mr-2 px-2.5 py-0.5 rounded-full mt-2">${album.ALBUM_TYPE}</span>
+                                
+                                <div class="mt-6 grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm text-gray-300">
+                                    ${album.RELEASE_DATE ? `<div><strong class="text-gray-400 block">Release Date</strong> ${album.RELEASE_DATE}</div>` : ''}
+                                    ${album.LABEL ? `<div><strong class="text-gray-400 block">Label</strong> ${album.LABEL}</div>` : ''}
+                                    ${album.CATALOG_NO ? `<div><strong class="text-gray-400 block">Catalog No.</strong> ${album.CATALOG_NO}</div>` : ''}
+                                    ${album.DISTRIBUTOR ? `<div><strong class="text-gray-400 block">Distributor</strong> ${album.DISTRIBUTOR}</div>` : ''}
+                                    ${album.PRODUCER ? `<div><strong class="text-gray-400 block">Producer</strong> ${album.PRODUCER}</div>` : ''}
+                                    ${album.ENGINEER ? `<div><strong class="text-gray-400 block">Engineer</strong> ${album.ENGINEER}</div>` : ''}
+                                    ${album.MASTERING ? `<div><strong class="text-gray-400 block">Mastering</strong> ${album.MASTERING}</div>` : ''}
+                                    ${album.KEY_CONTRIBUTORS ? `<div><strong class="text-gray-400 block">Key Contributors</strong> ${album.KEY_CONTRIBUTORS}</div>` : ''}
+                                    ${album.PREORDER ? `<div><strong class="text-gray-400 block">Pre-order Date</strong> ${album.PREORDER}</div>` : ''}
+                                    ${album.UPLOADED ? `<div><strong class="text-gray-400 block">Upload Date</strong> ${album.UPLOADED}</div>` : ''}
+                                    ${album.VINYL_CD_RELEASE_DATE ? `<div><strong class="text-gray-400 block">Vinyl/CD Release</strong> ${album.VINYL_CD_RELEASE_DATE}</div>` : ''}
+                                    ${album.MBID ? `<div><strong class="text-gray-400 block">MusicBrainz ID</strong> ${album.MBID}</div>` : ''}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-4 sm:p-6">
+                            <h3 class="text-xl font-semibold mb-4 text-white">Tracks</h3>
+                            <div class="space-y-3">
+                                ${albumTracks.length > 0 ? albumTracks.map(track => `
+                                    <div class="p-4 rounded-lg bg-gray-800/60 flex items-center justify-between flex-wrap">
+                                        <div class="flex items-center">
+                                            <span class="text-gray-400 mr-4">${track.Track_No}.</span>
+                                            <div>
+                                                <p class="font-semibold text-white">${track.Track_Name}</p>
+                                                <p class="text-sm text-gray-400">${track.Artist_Name} &bull; ${track.Track_Duration}</p>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center space-x-3 mt-3 sm:mt-0">
+                                            ${track.SPOTIFY ? `<a href="${track.SPOTIFY}" target="_blank" class="text-green-400 hover:text-green-300">Spotify</a>` : ''}
+                                            ${track.Apple_Music ? `<a href="${track.Apple_Music}" target="_blank" class="text-red-400 hover:text-red-300">Apple Music</a>` : ''}
+                                            ${track.YouTubeMusic ? `<a href="${track.YouTubeMusic}" target="_blank" class="text-red-600 hover:text-red-500">YouTube</a>` : ''}
+                                            ${track.iTunes ? `<a href="${track.iTunes}" target="_blank" class="text-purple-400 hover:text-purple-300">iTunes</a>` : ''}
+                                        </div>
+                                        ${track.STREAM ? `<div class="w-full mt-4">${track.STREAM}</div>` : ''}
+                                    </div>
+                                `).join('') : '<p class="text-sm text-gray-500">No tracks added to this album yet.</p>'}
+                            </div>
+                            <div class="mt-6 text-center">
+                                <button class="add-track-btn btn-secondary text-white font-bold py-2 px-4 rounded text-sm" data-album-id="${album.id}">Add Track to this Album</button>
+                            </div>
+                        </div>
+                    `;
+                    albumList.appendChild(albumElement);
+                });
+
+                // Re-attach event listeners for the new "Add Track" buttons
+                document.querySelectorAll('.add-track-btn').forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        const albumId = e.target.getAttribute('data-album-id');
+                        trackForm.reset();
+                        trackForm.querySelector('input[name="albumId"]').value = albumId;
+                        showModal(trackModal, trackModalBackdrop);
+                    });
+                });
+            }
+
+            // Start listening for data from Firebase
+            listenForData();
+        });
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #111827;
+            color: #e5e7eb;
+        }
+        .modal-backdrop {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0,0,0,0.75);
+            z-index: 40;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 50;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .form-input {
+            background-color: #374151;
+            border-color: #4b5563;
+            color: #e5e7eb;
+        }
+        .form-input::placeholder {
+            color: #9ca3af;
+        }
+        .btn-primary {
+            background-color: #3b82f6;
+            transition: background-color 0.3s;
+        }
+        .btn-primary:hover {
+            background-color: #2563eb;
+        }
+        .btn-secondary {
+            background-color: #6b7280;
+            transition: background-color: 0.3s;
+        }
+        .btn-secondary:hover {
+            background-color: #4b5563;
+        }
+    </style>
+</head>
+<body class="p-4 sm:p-8">
+
+    <div class="max-w-7xl mx-auto">
+        <header class="text-center mb-12">
+            <h1 class="text-4xl sm:text-5xl font-bold text-white">My Music Catalog</h1>
+            <p class="text-lg text-gray-400 mt-2">A complete discography of my work.</p>
+        </header>
+
+        <div class="text-center mb-8">
+            <button id="show-album-form" class="btn-primary text-white font-bold py-2 px-4 rounded-lg shadow-lg">Add New Album</button>
+        </div>
+
+        <!-- Album Display Section -->
+        <div id="album-list" class="space-y-12">
+            <!-- Albums will be dynamically inserted here from Firebase -->
+            <p class="text-center text-gray-400">Loading catalog from the database...</p>
+        </div>
+    </div>
+
+    <!-- Add Album Modal -->
+    <div id="album-modal-backdrop" class="modal-backdrop"></div>
+    <div id="album-modal" class="modal w-11/12 max-w-3xl bg-gray-800 rounded-lg shadow-xl p-6 sm:p-8">
+        <h2 class="text-2xl font-bold mb-6 text-white">Add New Album</h2>
+        <form id="album-form" class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <input type="text" name="albumName" placeholder="Album Name" class="form-input w-full p-2 rounded" required>
+                <select name="albumType" class="form-input w-full p-2 rounded" required>
+                    <option value="" disabled selected>Album Type</option>
+                    <option value="LP">LP (Long Play)</option>
+                    <option value="EP">EP (Extended Play)</option>
+                    <option value="SP">SP (Single Play)</option>
+                </select>
+                <input type="text" name="albumArtist" placeholder="Album Artist" class="form-input w-full p-2 rounded" required>
+                <input type="text" name="artwork" placeholder="Artwork URL" class="form-input w-full p-2 rounded">
+                <input type="text" name="catalogNo" placeholder="Catalog No." class="form-input w-full p-2 rounded">
+                <input type="text" name="upc" placeholder="UPC (Hidden)" class="form-input w-full p-2 rounded">
+                <input type="text" name="distributor" placeholder="Distributor" class="form-input w-full p-2 rounded">
+                <input type="text" name="label" placeholder="Label" class="form-input w-full p-2 rounded">
+                <input type="text" name="producer" placeholder="Producer(s)" class="form-input w-full p-2 rounded">
+                <input type="text" name="engineer" placeholder="Engineer(s)" class="form-input w-full p-2 rounded">
+                <input type="text" name="mastering" placeholder="Mastering" class="form-input w-full p-2 rounded">
+                <input type="text" name="keyContributors" placeholder="Key Contributors" class="form-input w-full p-2 rounded">
+                <input type="text" name="mbid" placeholder="MusicBrainz ID" class="form-input w-full p-2 rounded">
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                 <div>
+                    <label class="text-sm text-gray-400">Upload Date</label>
+                    <input type="date" name="uploaded" class="form-input w-full p-2 rounded">
+                </div>
+                <div>
+                    <label class="text-sm text-gray-400">Pre-order Date</label>
+                    <input type="date" name="preorder" class="form-input w-full p-2 rounded">
+                </div>
+                <div>
+                    <label class="text-sm text-gray-400">Release Date</label>
+                    <input type="date" name="releaseDate" class="form-input w-full p-2 rounded" required>
+                </div>
+                 <div>
+                    <label class="text-sm text-gray-400">Vinyl & CD Release</label>
+                    <input type="date" name="vinylCdReleaseDate" class="form-input w-full p-2 rounded">
+                </div>
+            </div>
+            <div class="flex justify-end space-x-4 pt-4">
+                <button type="button" id="cancel-album" class="btn-secondary text-white font-bold py-2 px-4 rounded">Cancel</button>
+                <button type="submit" class="btn-primary text-white font-bold py-2 px-4 rounded">Save Album</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Add Track Modal -->
+    <div id="track-modal-backdrop" class="modal-backdrop"></div>
+    <div id="track-modal" class="modal w-11/12 max-w-2xl bg-gray-800 rounded-lg shadow-xl p-6 sm:p-8">
+        <h2 class="text-2xl font-bold mb-6 text-white">Add New Track</h2>
+        <form id="track-form" class="space-y-4">
+            <input type="hidden" name="albumId">
+            <input type="number" name="trackNo" placeholder="Track No." class="form-input w-full p-2 rounded" required>
+            <input type="text" name="trackName" placeholder="Track Name" class="form-input w-full p-2 rounded" required>
+            <input type="text" name="artistName" placeholder="Artist Name" class="form-input w-full p-2 rounded" required>
+            <input type="text" name="composers" placeholder="Composer(s)" class="form-input w-full p-2 rounded">
+            <input type="text" name="keyContributors" placeholder="Key Contributors" class="form-input w-full p-2 rounded">
+            <input type="text" name="isrc" placeholder="ISRC (Hidden)" class="form-input w-full p-2 rounded">
+            <input type="text" name="trackDuration" placeholder="Track Duration (MM:SS)" class="form-input w-full p-2 rounded" required>
+            <input type="url" name="appleMusic" placeholder="Apple Music URL" class="form-input w-full p-2 rounded">
+            <input type="url" name="spotify" placeholder="Spotify URL" class="form-input w-full p-2 rounded">
+            <input type="url" name="youtubeMusic" placeholder="YouTube Music URL" class="form-input w-full p-2 rounded">
+            <input type="url" name="itunes" placeholder="iTunes URL" class="form-input w-full p-2 rounded">
+            <textarea name="stream" placeholder="Embedded Stream Code" class="form-input w-full p-2 rounded h-24"></textarea>
+            <div class="flex justify-end space-x-4 pt-4">
+                <button type="button" id="cancel-track" class="btn-secondary text-white font-bold py-2 px-4 rounded">Cancel</button>
+                <button type="submit" class="btn-primary text-white font-bold py-2 px-4 rounded">Save Track</button>
+            </div>
+        </form>
+    </div>
+
+</body>
+</html>
