@@ -1,11 +1,15 @@
-# Domain-specific redirects
-https://angershade.com/* https://yegge.com/?filter=angershade 301
-https://thecorruptive.com/* https://yegge.com/?filter=thecorruptive 301
+# Domain redirects
+https://angershade.com/* https://yegge.com/?artist=angershade 301
+https://thecorruptive.com/* https://yegge.com/?artist=thecorruptive 301
 
 # Page redirects
-/admin /admin-login.html 200
 /terms /terms.html 200
 /privacy /privacy.html 200
+/about /index.html#about 200
+/music /index.html#music 200
+/blog /index.html#blog 200
+/subscribe /index.html#subscribe 200
+/contact /index.html#contact 200
 
-# SPA fallback
+# Handle SPA routing
 /* /index.html 200

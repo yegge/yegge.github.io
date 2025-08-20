@@ -7,7 +7,7 @@ git commit -m "Initial commit"
 git branch -M main
 
 # connect to the GitHub repo you created (replace URL)
-git remote add origin https://github.com/yegge/yegge.github.io
+git remote add origin https://github.com/yegge/yegge-site.git
 
 # push
 git push -u origin main
