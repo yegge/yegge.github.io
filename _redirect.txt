@@ -1,0 +1,11 @@
+# Domain-specific redirects
+https://angershade.com/* https://yegge.com/?filter=angershade 301
+https://thecorruptive.com/* https://yegge.com/?filter=thecorruptive 301
+
+# Page redirects
+/admin /admin-login.html 200
+/terms /terms.html 200
+/privacy /privacy.html 200
+
+# SPA fallback
+/* /index.html 200

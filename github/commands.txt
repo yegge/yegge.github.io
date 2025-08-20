@@ -1,0 +1,13 @@
+# inside your project root (the folder that has index.html, assets/, etc.)
+git init
+git add .
+git commit -m "Initial commit"
+
+# set main as default branch
+git branch -M main
+
+# connect to the GitHub repo you created (replace URL)
+git remote add origin https://github.com/yegge/yegge-site.git
+
+# push
+git push -u origin main
