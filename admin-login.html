@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login - YEGGE</title>
+    
+    <!-- CSS Framework -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-black: #000000;
+            --primary-grey: #333333;
+            --light-grey: #666666;
+            --accent-white: #ffffff;
+            --dark-grey: #1a1a1a;
+            --border-grey: #444444;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(135deg, var(--primary-black) 0%, var(--primary-grey) 100%);
+            color: var(--accent-white);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--accent-white);
+        }
+
+        .login-container {
+            background-color: var(--dark-grey);
+            border: 1px solid var(--border-grey);
+            border-radius: 12px;
+            padding: 3rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .login-title {
+            text-align: center;
+            font-size: 1.8rem;
+            margin-bottom: 2rem;
+            color: var(--accent-white);
+        }
+
+        .field {
+            margin-bottom: 1.5rem;
+        }
+
+        .label {
+            color: var(--accent-white);
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+        }
+
+        .input {
+            background-color: var(--primary-grey);
+            border: 1px solid var(--border-grey);
+            color: var(--accent-white);
+            border-radius: 6px;
+            padding: 0.75rem 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .input:focus {
+            border-color: var(--accent-white);
+            box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2);
+            background-color: var(--primary-black);
+        }
+
+        .input::placeholder {
+            color: var(--light-grey);
+        }
+
+        .button {
+            background-color: var(--accent-white);
+            color: var(--primary-black);
+            border: none;
+            padding: 0.875rem 2rem;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-radius: 6px;
+            width: 100%;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .button:hover {
+            background-color: var(--light-grey);
+            color: var(--accent-white);
+            transform: translateY(-2px);
+        }
+
+        .button:disabled {
+            background-color: var(--border-grey);
+            color: var(--light-grey);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .error-message {
+            background-color: #ff3860;
+            color: white;
+            padding: 0.75rem 1rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+            text-align: center;
+            display: none;
+        }
+
+        .back-link {
+            display: block;
+            text-align: center;
+            color: var(--light-grey);
+            text-decoration: none;
+            margin-top: 2rem;
+            transition: color 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .back-link:hover {
+            color: var(--accent-white);
+        }
+
+        .loading-spinner {
+            display: none;
+            text-align: center;
+            margin-top: 1rem;
+        }
+
+        .spinner {
+            border: 2px solid var(--border-grey);
+            border-top: 2px solid var(--accent-white);
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .login-info {
+            background-color: var(--primary-grey);
+            border: 1px solid var(--border-grey);
+            border-radius: 6px;
+            padding: 1rem;
+            margin-bottom: 2rem;
+            font-size: 0.9rem;
+            color: var(--light-grey);
+        }
+
+        .login-info h4 {
+            color: var(--accent-white);
+            font-size: 0.8rem;
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h1 class="login-title">ADMIN LOGIN</h1>
+        
+        <div class="login-info">
+            <h4>ACCESS RESTRICTED</h4>
+            <p>This area is restricted to authorized personnel only. Please enter your credentials to continue.</p>
+        </div>
+
+        <div id="error-message" class="error-message">
+            Invalid username or password. Please try again.
+        </div>
+
+        <form id="login-form" onsubmit="handleLogin(event)">
+            <div class="field">
+                <label class="label">USERNAME</label>
+                <div class="control has-icons-left">
+                    <input class="input" type="text" name="username" placeholder="Enter your username" required>
+                    <span class="icon is-small is-left">
+                        <i class="fas fa-user"></i>
+                    </span>
+                </div>
+            </div>
+
+            <div class="field">
+                <label class="label">PASSWORD</label>
+                <div class="control has-icons-left">
+                    <input class="input" type="password" name="password" placeholder="Enter your password" required>
+                    <span class="icon is-small is-left">
+                        <i class="fas fa-lock"></i>
+                    </span>
+                </div>
+            </div>
+
+            <div class="field">
+                <div class="control">
+                    <label class="checkbox" style="color: var(--light-grey);">
+                        <input type="checkbox" name="remember" style="margin-right: 0.5rem;">
+                        Remember me for 30 days
+                    </label>
+                </div>
+            </div>
+
+            <div class="field">
+                <div class="control">
+                    <button type="submit" class="button" id="login-button">
+                        LOGIN
+                    </button>
+                </div>
+            </div>
+        </form>
+
+        <div class="loading-spinner" id="loading-spinner">
+            <div class="spinner"></div>
+            <p style="margin-top: 0.5rem; color: var(--light-grey);">Authenticating...</p>
+        </div>
+
+        <a href="/" class="back-link">← Back to Website</a>
+    </div>
+
+    <script>
+        // Admin credentials (in production, this should be handled server-side)
+        const ADMIN_CREDENTIALS = {
+            username: 'brianyegge',
+            password: 'YeggeAdmin2025!'
+        };
+
+        // Check if already logged in
+        document.addEventListener('DOMContentLoaded', function() {
+            const isLoggedIn = localStorage.getItem('adminLoggedIn');
+            const loginExpiry = localStorage.getItem('adminLoginExpiry');
+            
+            if (isLoggedIn && loginExpiry && new Date().getTime() < parseInt(loginExpiry)) {
+                window.location.href = '/admin.html';
+            }
+        });
+
+        async function handleLogin(event) {
+            event.preventDefault();
+            
+            const formData = new FormData(event.target);
+            const username = formData.get('username');
+            const password = formData.get('password');
+            const remember = formData.get('remember');
+            
+            // Show loading state
+            showLoading(true);
+            hideError();
+            
+            // Simulate authentication delay (remove in production)
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            // Validate credentials
+            if (username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password) {
+                // Set login status
+                localStorage.setItem('adminLoggedIn', 'true');
+                localStorage.setItem('adminUser', username);
+                
+                // Set expiry (30 days if remember is checked, otherwise session)
+                const expiryTime = remember ? 
+                    new Date().getTime() + (30 * 24 * 60 * 60 * 1000) : 
+                    new Date().getTime() + (24 * 60 * 60 * 1000);
+                
+                localStorage.setItem('adminLoginExpiry', expiryTime.toString());
+                
+                // Log the login attempt
+                logLoginAttempt(username, true);
+                
+                // Redirect to admin panel
+                window.location.href = '/admin.html';
+            } else {
+                // Show error
+                showError('Invalid username or password. Please try again.');
+                logLoginAttempt(username, false);
+                showLoading(false);
+                
+                // Clear password field
+                document.querySelector('input[name="password"]').value = '';
+                document.querySelector('input[name="password"]').focus();
+            }
+        }
+
+        function showLoading(show) {
+            const loginForm = document.getElementById('login-form');
+            const loadingSpinner = document.getElementById('loading-spinner');
+            const loginButton = document.getElementById('login-button');
+            
+            if (show) {
+                loginForm.style.opacity = '0.5';
+                loadingSpinner.style.display = 'block';
+                loginButton.disabled = true;
+            } else {
+                loginForm.style.opacity = '1';
+                loadingSpinner.style.display = 'none';
+                loginButton.disabled = false;
+            }
+        }
+
+        function showError(message) {
+            const errorElement = document.getElementById('error-message');
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                hideError();
+            }, 5000);
+        }
+
+        function hideError() {
+            document.getElementById('error-message').style.display = 'none';
+        }
+
+        function logLoginAttempt(username, success) {
+            // In production, you might want to log this to your analytics or security system
+            const timestamp = new Date().toISOString();
+            const logEntry = {
+                timestamp: timestamp,
+                username: username,
+                success: success,
+                ip: 'unknown', // Would be determined server-side
+                userAgent: navigator.userAgent
+            };
+            
+            // Store in local storage for demo purposes (use server logging in production)
+            const loginLogs = JSON.parse(localStorage.getItem('adminLoginLogs') || '[]');
+            loginLogs.push(logEntry);
+            
+            // Keep only last 50 entries
+            if (loginLogs.length > 50) {
+                loginLogs.splice(0, loginLogs.length - 50);
+            }
+            
+            localStorage.setItem('adminLoginLogs', JSON.stringify(loginLogs));
+            
+            console.log(`Login attempt: ${username} - ${success ? 'SUCCESS' : 'FAILED'} at ${timestamp}`);
+        }
+
+        // Handle enter key on form inputs
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && e.target.tagName.toLowerCase() === 'input') {
+                const form = document.getElementById('login-form');
+                if (form.checkValidity()) {
+                    handleLogin(new Event('submit'));
+                }
+            }
+        });
+
+        // Auto-focus username field
+        document.querySelector('input[name="username"]').focus();
+
+        // Security: Clear any existing admin session on page load
+        if (window.location.search.includes('logout=true')) {
+            localStorage.removeItem('adminLoggedIn');
+            localStorage.removeItem('adminUser');
+            localStorage.removeItem('adminLoginExpiry');
+            
+            // Show logout message
+            setTimeout(() => {
+                showError('You have been logged out successfully.');
+            }, 500);
+        }
+
+        // Prevent back button after logout
+        window.addEventListener('pageshow', function(event) {
+            if (event.persisted || window.performance?.navigation?.type === 2) {
+                // Clear any cached admin status
+                const isLoggedIn = localStorage.getItem('adminLoggedIn');
+                const loginExpiry = localStorage.getItem('adminLoginExpiry');
+                
+                if (!isLoggedIn || !loginExpiry || new Date().getTime() >= parseInt(loginExpiry)) {
+                    localStorage.removeItem('adminLoggedIn');
+                    localStorage.removeItem('adminUser');
+                    localStorage.removeItem('adminLoginExpiry');
+                }
+            }
+        });
+    </script>
+</body>
+</html>

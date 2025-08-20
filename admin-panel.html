@@ -1,0 +1,1211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - YEGGE</title>
+    
+    <!-- CSS Framework -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-black: #000000;
+            --primary-grey: #333333;
+            --light-grey: #666666;
+            --accent-white: #ffffff;
+            --dark-grey: #1a1a1a;
+            --border-grey: #444444;
+            --success-green: #00d1b2;
+            --warning-yellow: #ffdd57;
+            --danger-red: #ff3860;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--primary-black);
+            color: var(--accent-white);
+            line-height: 1.6;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--accent-white);
+        }
+
+        .admin-header {
+            background-color: var(--dark-grey);
+            border-bottom: 1px solid var(--border-grey);
+            padding: 1rem 0;
+            margin-bottom: 2rem;
+        }
+
+        .admin-title {
+            color: var(--accent-white);
+            font-size: 1.5rem;
+            margin: 0;
+        }
+
+        .admin-nav {
+            background-color: var(--primary-grey);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .admin-nav .buttons {
+            margin-bottom: 0;
+        }
+
+        .button {
+            background-color: var(--dark-grey);
+            color: var(--accent-white);
+            border: 1px solid var(--border-grey);
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .button:hover {
+            background-color: var(--light-grey);
+            border-color: var(--accent-white);
+        }
+
+        .button.is-active {
+            background-color: var(--accent-white);
+            color: var(--primary-black);
+        }
+
+        .admin-section {
+            background-color: var(--dark-grey);
+            border: 1px solid var(--border-grey);
+            border-radius: 8px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .form-section {
+            margin-bottom: 2rem;
+        }
+
+        .field {
+            margin-bottom: 1.5rem;
+        }
+
+        .label {
+            color: var(--accent-white);
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .input, .textarea, .select select {
+            background-color: var(--primary-grey);
+            border: 1px solid var(--border-grey);
+            color: var(--accent-white);
+        }
+
+        .input:focus, .textarea:focus, .select select:focus {
+            border-color: var(--accent-white);
+            box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2);
+        }
+
+        .table {
+            background-color: var(--dark-grey);
+            color: var(--accent-white);
+        }
+
+        .table td, .table th {
+            border-color: var(--border-grey);
+        }
+
+        .table th {
+            color: var(--accent-white);
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-published { background-color: var(--success-green); color: white; }
+        .status-draft { background-color: var(--warning-yellow); color: black; }
+        .status-scheduled { background-color: var(--primary-grey); color: white; }
+
+        .visibility-public { background-color: var(--success-green); color: white; }
+        .visibility-admin { background-color: var(--danger-red); color: white; }
+        .visibility-vip { background-color: var(--warning-yellow); color: black; }
+
+        .stats-card {
+            background-color: var(--primary-grey);
+            border: 1px solid var(--border-grey);
+            border-radius: 8px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .stats-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent-white);
+        }
+
+        .stats-label {
+            color: var(--light-grey);
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 0.05em;
+        }
+
+        .hidden { display: none !important; }
+        
+        .notification {
+            background-color: var(--success-green);
+            color: white;
+        }
+
+        .editor-toolbar {
+            background-color: var(--primary-grey);
+            padding: 0.5rem;
+            border-radius: 4px 4px 0 0;
+            border: 1px solid var(--border-grey);
+            border-bottom: none;
+        }
+
+        .editor-toolbar button {
+            background: none;
+            border: 1px solid var(--border-grey);
+            color: var(--accent-white);
+            padding: 0.25rem 0.5rem;
+            margin-right: 0.25rem;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .editor-toolbar button:hover {
+            background-color: var(--light-grey);
+        }
+
+        .rich-editor {
+            min-height: 200px;
+            background-color: var(--primary-grey);
+            border: 1px solid var(--border-grey);
+            border-radius: 0 0 4px 4px;
+            padding: 1rem;
+            color: var(--accent-white);
+        }
+    </style>
+</head>
+<body>
+    <!-- Admin Header -->
+    <header class="admin-header">
+        <div class="container">
+            <div class="level">
+                <div class="level-left">
+                    <h1 class="admin-title">YEGGE ADMIN PANEL</h1>
+                </div>
+                <div class="level-right">
+                    <a href="/" class="button">
+                        <i class="fas fa-eye"></i>
+                        <span>VIEW SITE</span>
+                    </a>
+                    <button class="button" onclick="logout()">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>LOGOUT</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Navigation -->
+        <nav class="admin-nav">
+            <div class="buttons">
+                <button class="button is-active" onclick="showSection('dashboard')">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>DASHBOARD</span>
+                </button>
+                <button class="button" onclick="showSection('albums')">
+                    <i class="fas fa-compact-disc"></i>
+                    <span>ALBUMS</span>
+                </button>
+                <button class="button" onclick="showSection('tracks')">
+                    <i class="fas fa-music"></i>
+                    <span>TRACKS</span>
+                </button>
+                <button class="button" onclick="showSection('blog')">
+                    <i class="fas fa-blog"></i>
+                    <span>BLOG</span>
+                </button>
+                <button class="button" onclick="showSection('subscribers')">
+                    <i class="fas fa-users"></i>
+                    <span>SUBSCRIBERS</span>
+                </button>
+                <button class="button" onclick="showSection('inquiries')">
+                    <i class="fas fa-envelope"></i>
+                    <span>INQUIRIES</span>
+                </button>
+            </div>
+        </nav>
+
+        <!-- Dashboard Section -->
+        <section id="dashboard-section" class="admin-section">
+            <h2>DASHBOARD OVERVIEW</h2>
+            
+            <div class="columns">
+                <div class="column">
+                    <div class="stats-card">
+                        <div class="stats-number" id="stats-albums">0</div>
+                        <div class="stats-label">Total Albums</div>
+                    </div>
+                </div>
+                <div class="column">
+                    <div class="stats-card">
+                        <div class="stats-number" id="stats-tracks">0</div>
+                        <div class="stats-label">Total Tracks</div>
+                    </div>
+                </div>
+                <div class="column">
+                    <div class="stats-card">
+                        <div class="stats-number" id="stats-posts">0</div>
+                        <div class="stats-label">Blog Posts</div>
+                    </div>
+                </div>
+                <div class="column">
+                    <div class="stats-card">
+                        <div class="stats-number" id="stats-subscribers">0</div>
+                        <div class="stats-label">Subscribers</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="columns">
+                <div class="column is-half">
+                    <h3>Recent Activity</h3>
+                    <div id="recent-activity">
+                        <p>Loading recent activity...</p>
+                    </div>
+                </div>
+                <div class="column is-half">
+                    <h3>Quick Actions</h3>
+                    <div class="buttons">
+                        <button class="button" onclick="showSection('albums'); showAlbumForm();">
+                            <i class="fas fa-plus"></i>
+                            <span>ADD ALBUM</span>
+                        </button>
+                        <button class="button" onclick="showSection('blog'); showBlogForm();">
+                            <i class="fas fa-plus"></i>
+                            <span>NEW POST</span>
+                        </button>
+                        <button class="button" onclick="exportData()">
+                            <i class="fas fa-download"></i>
+                            <span>EXPORT DATA</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Albums Section -->
+        <section id="albums-section" class="admin-section hidden">
+            <div class="level">
+                <div class="level-left">
+                    <h2>ALBUM MANAGEMENT</h2>
+                </div>
+                <div class="level-right">
+                    <button class="button" onclick="showAlbumForm()">
+                        <i class="fas fa-plus"></i>
+                        <span>ADD ALBUM</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Album Form -->
+            <div id="album-form" class="form-section hidden">
+                <h3>ADD/EDIT ALBUM</h3>
+                <form onsubmit="saveAlbum(event)">
+                    <div class="columns">
+                        <div class="column">
+                            <div class="field">
+                                <label class="label">Album Name</label>
+                                <div class="control">
+                                    <input class="input" type="text" name="albumName" required>
+                                </div>
+                            </div>
+
+                            <div class="field">
+                                <label class="label">Album Artist</label>
+                                <div class="control">
+                                    <div class="select is-fullwidth">
+                                        <select name="albumArtist" required>
+                                            <option value="">Select Artist</option>
+                                            <option value="Angershade">Angershade</option>
+                                            <option value="The Corruptive">The Corruptive</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="field">
+                                <label class="label">Album Type</label>
+                                <div class="control">
+                                    <div class="select is-fullwidth">
+                                        <select name="albumType" required>
+                                            <option value="">Select Type</option>
+                                            <option value="EP">EP</option>
+                                            <option value="LP">LP</option>
+                                            <option value="SP">SP</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="column">
+                            <div class="field">
+                                <label class="label">Release Date</label>
+                                <div class="control">
+                                    <input class="input" type="date" name="releaseDate">
+                                </div>
+                            </div>
+
+                            <div class="field">
+                                <label class="label">Catalog Number</label>
+                                <div class="control">
+                                    <input class="input" type="text" name="catalogNo" placeholder="YGG-I">
+                                </div>
+                            </div>
+
+                            <div class="field">
+                                <label class="label">Visibility</label>
+                                <div class="control">
+                                    <div class="select is-fullwidth">
+                                        <select name="visibility" required>
+                                            <option value="PUBLIC">Public</option>
+                                            <option value="VIP">VIP Only</option>
+                                            <option value="ADMIN">Admin Only</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label class="label">Album Commentary</label>
+                        <div class="control">
+                            <textarea class="textarea" name="commentary" rows="4"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <div class="control">
+                            <button type="submit" class="button">SAVE POST</button>
+                            <button type="button" class="button" onclick="hideBlogForm()">CANCEL</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Blog Posts List -->
+            <div class="table-container">
+                <table class="table is-fullwidth">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Category</th>
+                            <th>Status</th>
+                            <th>Publish Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="blog-table-body">
+                        <!-- Blog posts will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Subscribers Section -->
+        <section id="subscribers-section" class="admin-section hidden">
+            <div class="level">
+                <div class="level-left">
+                    <h2>SUBSCRIBERS</h2>
+                </div>
+                <div class="level-right">
+                    <button class="button" onclick="exportSubscribers()">
+                        <i class="fas fa-download"></i>
+                        <span>EXPORT CSV</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table class="table is-fullwidth">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Country</th>
+                            <th>Signup Date</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="subscribers-table-body">
+                        <!-- Subscribers will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Inquiries Section -->
+        <section id="inquiries-section" class="admin-section hidden">
+            <div class="level">
+                <div class="level-left">
+                    <h2>CONTACT INQUIRIES</h2>
+                </div>
+                <div class="level-right">
+                    <div class="buttons">
+                        <button class="button" onclick="filterInquiries('new')">NEW</button>
+                        <button class="button" onclick="filterInquiries('responded')">RESPONDED</button>
+                        <button class="button" onclick="filterInquiries('all')">ALL</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table class="table is-fullwidth">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Subject</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inquiries-table-body">
+                        <!-- Inquiries will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Tracks Section -->
+        <section id="tracks-section" class="admin-section hidden">
+            <div class="level">
+                <div class="level-left">
+                    <h2>TRACK MANAGEMENT</h2>
+                </div>
+                <div class="level-right">
+                    <button class="button" onclick="showTrackForm()">
+                        <i class="fas fa-plus"></i>
+                        <span>ADD TRACK</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Track Form -->
+            <div id="track-form" class="form-section hidden">
+                <h3>ADD/EDIT TRACK</h3>
+                <form onsubmit="saveTrack(event)">
+                    <div class="columns">
+                        <div class="column">
+                            <div class="field">
+                                <label class="label">Track Name</label>
+                                <div class="control">
+                                    <input class="input" type="text" name="trackName" required>
+                                </div>
+                            </div>
+
+                            <div class="field">
+                                <label class="label">Album</label>
+                                <div class="control">
+                                    <div class="select is-fullwidth">
+                                        <select name="albumId" id="track-album-select" required>
+                                            <option value="">Select Album</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="column">
+                            <div class="field">
+                                <label class="label">Track Number</label>
+                                <div class="control">
+                                    <input class="input" type="number" name="trackNo" min="1">
+                                </div>
+                            </div>
+
+                            <div class="field">
+                                <label class="label">Duration (MM:SS)</label>
+                                <div class="control">
+                                    <input class="input" type="text" name="duration" placeholder="3:45">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="columns">
+                        <div class="column">
+                            <div class="field">
+                                <label class="label">Track Status</label>
+                                <div class="control">
+                                    <div class="select is-fullwidth">
+                                        <select name="trackStatus" required>
+                                            <option value="WIP">Work in Progress</option>
+                                            <option value="B-SIDE">B-Side</option>
+                                            <option value="RELEASED">Released</option>
+                                            <option value="SHELVED">Shelved</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="column">
+                            <div class="field">
+                                <label class="label">Production Stage</label>
+                                <div class="control">
+                                    <div class="select is-fullwidth">
+                                        <select name="productionStage" required>
+                                            <option value="CONCEPTION">Conception</option>
+                                            <option value="DEMO">Demo</option>
+                                            <option value="IN SESSION">In Session</option>
+                                            <option value="OUT SESSION">Out of Session</option>
+                                            <option value="MIXDOWN">Mixdown</option>
+                                            <option value="MASTERING">Mastering</option>
+                                            <option value="DISTRIBUTION">Distribution</option>
+                                            <option value="RELEASED">Released</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label class="label">Track Commentary</label>
+                        <div class="control">
+                            <textarea class="textarea" name="trackCommentary" rows="3"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <div class="control">
+                            <button type="submit" class="button">SAVE TRACK</button>
+                            <button type="button" class="button" onclick="hideTrackForm()">CANCEL</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Tracks List -->
+            <div class="table-container">
+                <table class="table is-fullwidth">
+                    <thead>
+                        <tr>
+                            <th>Track Name</th>
+                            <th>Album</th>
+                            <th>Track #</th>
+                            <th>Duration</th>
+                            <th>Status</th>
+                            <th>Stage</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tracks-table-body">
+                        <!-- Tracks will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+    <!-- Success/Error Notifications -->
+    <div id="notification" class="notification is-hidden" style="position: fixed; top: 20px; right: 20px; z-index: 1000;">
+        <button class="delete" onclick="hideNotification()"></button>
+        <span id="notification-message"></span>
+    </div>
+
+    <script>
+        // Global variables
+        let currentUser = null;
+        let airtableConfig = {
+            apiKey: 'YOUR_AIRTABLE_API_KEY',
+            baseId: 'YOUR_BASE_ID',
+            baseUrl: 'https://api.airtable.com/v0/'
+        };
+
+        // Authentication check
+        function checkAuth() {
+            const isLoggedIn = localStorage.getItem('adminLoggedIn');
+            if (!isLoggedIn) {
+                window.location.href = '/admin-login.html';
+                return false;
+            }
+            return true;
+        }
+
+        // Initialize admin panel
+        document.addEventListener('DOMContentLoaded', function() {
+            if (!checkAuth()) return;
+            
+            loadDashboard();
+            loadStats();
+        });
+
+        // Section management
+        function showSection(sectionName) {
+            // Hide all sections
+            const sections = document.querySelectorAll('.admin-section');
+            sections.forEach(section => section.classList.add('hidden'));
+            
+            // Show target section
+            const targetSection = document.getElementById(`${sectionName}-section`);
+            if (targetSection) {
+                targetSection.classList.remove('hidden');
+            }
+
+            // Update active button
+            const buttons = document.querySelectorAll('.admin-nav .button');
+            buttons.forEach(btn => btn.classList.remove('is-active'));
+            event.target.classList.add('is-active');
+
+            // Load section-specific data
+            switch(sectionName) {
+                case 'albums':
+                    loadAlbums();
+                    break;
+                case 'blog':
+                    loadBlogPosts();
+                    break;
+                case 'subscribers':
+                    loadSubscribers();
+                    break;
+                case 'inquiries':
+                    loadInquiries();
+                    break;
+                case 'tracks':
+                    loadTracks();
+                    break;
+            }
+        }
+
+        // Dashboard functions
+        async function loadDashboard() {
+            try {
+                // Load recent activity
+                const recentActivity = await getRecentActivity();
+                displayRecentActivity(recentActivity);
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+            }
+        }
+
+        async function loadStats() {
+            try {
+                const [albums, tracks, posts, subscribers] = await Promise.all([
+                    getAirtableData('Albums'),
+                    getAirtableData('Tracks'),
+                    getAirtableData('Blog Posts'),
+                    getAirtableData('Subscribers')
+                ]);
+
+                document.getElementById('stats-albums').textContent = albums.length;
+                document.getElementById('stats-tracks').textContent = tracks.length;
+                document.getElementById('stats-posts').textContent = posts.length;
+                document.getElementById('stats-subscribers').textContent = subscribers.length;
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+
+        // Airtable API functions
+        async function getAirtableData(tableName, filters = {}) {
+            try {
+                let url = `${airtableConfig.baseUrl}${airtableConfig.baseId}/${tableName}`;
+                
+                const params = new URLSearchParams();
+                if (filters.formula) {
+                    params.append('filterByFormula', filters.formula);
+                }
+                if (filters.sort) {
+                    params.append('sort[0][field]', filters.sort.field);
+                    params.append('sort[0][direction]', filters.sort.direction || 'asc');
+                }
+
+                if (params.toString()) {
+                    url += `?${params.toString()}`;
+                }
+
+                const response = await fetch(url, {
+                    headers: {
+                        'Authorization': `Bearer ${airtableConfig.apiKey}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                return data.records || [];
+            } catch (error) {
+                console.error(`Error fetching ${tableName}:`, error);
+                return [];
+            }
+        }
+
+        async function createAirtableRecord(tableName, fields) {
+            try {
+                const response = await fetch(`${airtableConfig.baseUrl}${airtableConfig.baseId}/${tableName}`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${airtableConfig.apiKey}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ fields })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                return await response.json();
+            } catch (error) {
+                console.error(`Error creating ${tableName} record:`, error);
+                throw error;
+            }
+        }
+
+        async function updateAirtableRecord(tableName, recordId, fields) {
+            try {
+                const response = await fetch(`${airtableConfig.baseUrl}${airtableConfig.baseId}/${tableName}/${recordId}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Authorization': `Bearer ${airtableConfig.apiKey}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ fields })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                return await response.json();
+            } catch (error) {
+                console.error(`Error updating ${tableName} record:`, error);
+                throw error;
+            }
+        }
+
+        // Album management
+        function showAlbumForm() {
+            document.getElementById('album-form').classList.remove('hidden');
+        }
+
+        function hideAlbumForm() {
+            document.getElementById('album-form').classList.add('hidden');
+            document.querySelector('#album-form form').reset();
+        }
+
+        async function saveAlbum(event) {
+            event.preventDefault();
+            
+            const formData = new FormData(event.target);
+            const albumData = {
+                'Album Name': formData.get('albumName'),
+                'Album Artist': formData.get('albumArtist'),
+                'Album Type': formData.get('albumType'),
+                'Release Date': formData.get('releaseDate'),
+                'Catalog No.': formData.get('catalogNo'),
+                'Visibility': formData.get('visibility'),
+                'Album Commentary': formData.get('commentary'),
+                'Album Status': 'In Development'
+            };
+
+            try {
+                await createAirtableRecord('Albums', albumData);
+                showNotification('Album saved successfully!', 'success');
+                hideAlbumForm();
+                loadAlbums();
+            } catch (error) {
+                showNotification('Error saving album: ' + error.message, 'error');
+            }
+        }
+
+        async function loadAlbums() {
+            try {
+                const albums = await getAirtableData('Albums', {
+                    sort: { field: 'Release Date', direction: 'desc' }
+                });
+                
+                const tbody = document.getElementById('albums-table-body');
+                tbody.innerHTML = '';
+
+                albums.forEach(album => {
+                    const row = createAlbumRow(album);
+                    tbody.appendChild(row);
+                });
+            } catch (error) {
+                console.error('Error loading albums:', error);
+            }
+        }
+
+        function createAlbumRow(album) {
+            const row = document.createElement('tr');
+            const fields = album.fields;
+            
+            row.innerHTML = `
+                <td>${fields['Album Name'] || 'Untitled'}</td>
+                <td>${fields['Album Artist'] || 'Unknown'}</td>
+                <td>${fields['Album Type'] || 'Unknown'}</td>
+                <td><span class="status-badge status-${fields['Album Status']?.toLowerCase().replace(' ', '-')}">${fields['Album Status'] || 'Unknown'}</span></td>
+                <td><span class="status-badge visibility-${fields.Visibility?.toLowerCase()}">${fields.Visibility || 'Unknown'}</span></td>
+                <td>${fields['Release Date'] ? new Date(fields['Release Date']).toLocaleDateString() : 'TBA'}</td>
+                <td>
+                    <button class="button is-small" onclick="editAlbum('${album.id}')">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="button is-small" onclick="deleteAlbum('${album.id}')">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            `;
+
+            return row;
+        }
+
+        // Blog management
+        function showBlogForm() {
+            document.getElementById('blog-form').classList.remove('hidden');
+            // Set default publish date to now
+            const now = new Date().toISOString().slice(0, 16);
+            document.querySelector('input[name="publishDate"]').value = now;
+        }
+
+        function hideBlogForm() {
+            document.getElementById('blog-form').classList.add('hidden');
+            document.querySelector('#blog-form form').reset();
+            document.getElementById('blog-content').innerHTML = '';
+        }
+
+        async function saveBlogPost(event) {
+            event.preventDefault();
+            
+            const formData = new FormData(event.target);
+            const content = document.getElementById('blog-content').innerHTML;
+            
+            const postData = {
+                'Title': formData.get('title'),
+                'Content': content,
+                'Category': formData.get('category'),
+                'Tags': formData.get('tags'),
+                'Status': formData.get('status'),
+                'Publish Date': formData.get('publishDate'),
+                'Author': 'Brian Yegge'
+            };
+
+            try {
+                await createAirtableRecord('Blog Posts', postData);
+                showNotification('Blog post saved successfully!', 'success');
+                hideBlogForm();
+                loadBlogPosts();
+            } catch (error) {
+                showNotification('Error saving blog post: ' + error.message, 'error');
+            }
+        }
+
+        async function loadBlogPosts() {
+            try {
+                const posts = await getAirtableData('Blog Posts', {
+                    sort: { field: 'Publish Date', direction: 'desc' }
+                });
+                
+                const tbody = document.getElementById('blog-table-body');
+                tbody.innerHTML = '';
+
+                posts.forEach(post => {
+                    const row = createBlogRow(post);
+                    tbody.appendChild(row);
+                });
+            } catch (error) {
+                console.error('Error loading blog posts:', error);
+            }
+        }
+
+        function createBlogRow(post) {
+            const row = document.createElement('tr');
+            const fields = post.fields;
+            
+            row.innerHTML = `
+                <td>${fields.Title || 'Untitled'}</td>
+                <td>${fields.Category || 'Uncategorized'}</td>
+                <td><span class="status-badge status-${fields.Status?.toLowerCase()}">${fields.Status || 'Draft'}</span></td>
+                <td>${fields['Publish Date'] ? new Date(fields['Publish Date']).toLocaleDateString() : 'Not set'}</td>
+                <td>
+                    <button class="button is-small" onclick="editBlogPost('${post.id}')">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="button is-small" onclick="deleteBlogPost('${post.id}')">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            `;
+
+            return row;
+        }
+
+        // Rich text editor functions
+        function formatText(command, value = null) {
+            document.execCommand(command, false, value);
+            document.getElementById('blog-content').focus();
+        }
+
+        function insertLink() {
+            const url = prompt('Enter the URL:');
+            if (url) {
+                formatText('createLink', url);
+            }
+        }
+
+        // Notification system
+        function showNotification(message, type = 'info') {
+            const notification = document.getElementById('notification');
+            const messageSpan = document.getElementById('notification-message');
+            
+            messageSpan.textContent = message;
+            notification.className = `notification ${type === 'success' ? 'is-success' : type === 'error' ? 'is-danger' : 'is-info'}`;
+            notification.classList.remove('is-hidden');
+            
+            setTimeout(() => {
+                hideNotification();
+            }, 5000);
+        }
+
+        function hideNotification() {
+            document.getElementById('notification').classList.add('is-hidden');
+        }
+
+        // Utility functions
+        function logout() {
+            localStorage.removeItem('adminLoggedIn');
+            window.location.href = '/admin-login.html';
+        }
+
+        async function exportData() {
+            try {
+                const [albums, tracks, posts] = await Promise.all([
+                    getAirtableData('Albums'),
+                    getAirtableData('Tracks'),
+                    getAirtableData('Blog Posts')
+                ]);
+
+                const exportData = {
+                    albums: albums,
+                    tracks: tracks,
+                    posts: posts,
+                    exportDate: new Date().toISOString()
+                };
+
+                const dataStr = JSON.stringify(exportData, null, 2);
+                const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+                
+                const exportFileDefaultName = `yegge-backup-${new Date().toISOString().split('T')[0]}.json`;
+                
+                const linkElement = document.createElement('a');
+                linkElement.setAttribute('href', dataUri);
+                linkElement.setAttribute('download', exportFileDefaultName);
+                linkElement.click();
+                
+                showNotification('Data exported successfully!', 'success');
+            } catch (error) {
+                showNotification('Error exporting data: ' + error.message, 'error');
+            }
+        }
+
+        // Additional placeholder functions for other sections
+        async function loadSubscribers() {
+            // Implementation for loading subscribers
+        }
+
+        async function loadInquiries() {
+            // Implementation for loading inquiries
+        }
+
+        async function loadTracks() {
+            // Implementation for loading tracks
+        }
+
+        function showTrackForm() {
+            document.getElementById('track-form').classList.remove('hidden');
+        }
+
+        function hideTrackForm() {
+            document.getElementById('track-form').classList.add('hidden');
+        }
+
+        async function saveTrack(event) {
+            // Implementation for saving tracks
+        }
+
+        async function getRecentActivity() {
+            // Implementation for getting recent activity
+            return [];
+        }
+
+        function displayRecentActivity(activity) {
+            // Implementation for displaying recent activity
+        }
+
+        function filterInquiries(status) {
+            // Implementation for filtering inquiries
+        }
+
+        function exportSubscribers() {
+            // Implementation for exporting subscribers
+        }
+    </script>
+</body>
+</html>
+                            <button type="submit" class="button">SAVE ALBUM</button>
+                            <button type="button" class="button" onclick="hideAlbumForm()">CANCEL</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Albums List -->
+            <div class="table-container">
+                <table class="table is-fullwidth">
+                    <thead>
+                        <tr>
+                            <th>Album Name</th>
+                            <th>Artist</th>
+                            <th>Type</th>
+                            <th>Status</th>
+                            <th>Visibility</th>
+                            <th>Release Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="albums-table-body">
+                        <!-- Albums will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Blog Section -->
+        <section id="blog-section" class="admin-section hidden">
+            <div class="level">
+                <div class="level-left">
+                    <h2>BLOG MANAGEMENT</h2>
+                </div>
+                <div class="level-right">
+                    <button class="button" onclick="showBlogForm()">
+                        <i class="fas fa-plus"></i>
+                        <span>NEW POST</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Blog Form -->
+            <div id="blog-form" class="form-section hidden">
+                <h3>CREATE/EDIT BLOG POST</h3>
+                <form onsubmit="saveBlogPost(event)">
+                    <div class="columns">
+                        <div class="column is-two-thirds">
+                            <div class="field">
+                                <label class="label">Post Title</label>
+                                <div class="control">
+                                    <input class="input" type="text" name="title" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="column">
+                            <div class="field">
+                                <label class="label">Category</label>
+                                <div class="control">
+                                    <div class="select is-fullwidth">
+                                        <select name="category" required>
+                                            <option value="">Select Category</option>
+                                            <option value="Yegge">Yegge</option>
+                                            <option value="Angershade">Angershade</option>
+                                            <option value="The Corruptive">The Corruptive</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label class="label">Content</label>
+                        <div class="editor-toolbar">
+                            <button type="button" onclick="formatText('bold')"><i class="fas fa-bold"></i></button>
+                            <button type="button" onclick="formatText('italic')"><i class="fas fa-italic"></i></button>
+                            <button type="button" onclick="formatText('underline')"><i class="fas fa-underline"></i></button>
+                            <button type="button" onclick="formatText('insertOrderedList')"><i class="fas fa-list-ol"></i></button>
+                            <button type="button" onclick="formatText('insertUnorderedList')"><i class="fas fa-list-ul"></i></button>
+                            <button type="button" onclick="insertLink()"><i class="fas fa-link"></i></button>
+                        </div>
+                        <div class="control">
+                            <div class="rich-editor" contenteditable="true" id="blog-content"></div>
+                        </div>
+                    </div>
+
+                    <div class="columns">
+                        <div class="column">
+                            <div class="field">
+                                <label class="label">Tags (comma separated)</label>
+                                <div class="control">
+                                    <input class="input" type="text" name="tags" placeholder="music, announcement, release">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="column">
+                            <div class="field">
+                                <label class="label">Publish Date</label>
+                                <div class="control">
+                                    <input class="input" type="datetime-local" name="publishDate">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="column">
+                            <div class="field">
+                                <label class="label">Status</label>
+                                <div class="control">
+                                    <div class="select is-fullwidth">
+                                        <select name="status" required>
+                                            <option value="Draft">Draft</option>
+                                            <option value="Published">Published</option>
+                                            <option value="Scheduled">Scheduled</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <div class="control">

@@ -3,7 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YEGGE - Independent Music Label</title>
+    <title>Blog - YEGGE</title>
+    
+    <!-- Meta tags for SEO -->
+    <meta name="description" content="Latest news, updates, and insights from Yegge, Angershade, and The Corruptive music projects.">
+    <meta name="keywords" content="yegge, angershade, the corruptive, electronic music, experimental music, blog, music news">
+    <meta name="author" content="Brian Yegge">
+    
+    <!-- Open Graph meta tags -->
+    <meta property="og:title" content="Blog - YEGGE">
+    <meta property="og:description" content="Latest news and updates from Yegge music label">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://yegge.com/blog.html">
+    <meta property="og:image" content="https://yegge.com/assets/images/og-image.png">
     
     <!-- CSS Framework -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
@@ -43,6 +55,7 @@
             text-transform: uppercase;
             letter-spacing: 0.05em;
             margin-bottom: 1rem;
+            color: var(--accent-white);
         }
 
         h1 { font-size: 2.5rem; }
@@ -91,6 +104,11 @@
             background-color: transparent !important;
         }
 
+        .navbar-item.is-active {
+            color: var(--accent-white) !important;
+            background-color: var(--primary-grey) !important;
+        }
+
         .navbar-burger {
             color: var(--accent-white);
         }
@@ -101,128 +119,272 @@
             padding: 2rem 0;
         }
 
-        .hero-section {
+        .page-header {
             text-align: center;
-            padding: 4rem 0;
+            padding: 3rem 0;
             background: linear-gradient(135deg, var(--primary-black) 0%, var(--primary-grey) 100%);
+            margin-bottom: 3rem;
         }
 
-        .hero-title {
+        .page-title {
             font-size: 3rem;
             margin-bottom: 1rem;
             color: var(--accent-white);
         }
 
-        .hero-subtitle {
+        .page-subtitle {
             font-size: 1.25rem;
             color: var(--light-grey);
             max-width: 600px;
-            margin: 0 auto 2rem;
+            margin: 0 auto;
+            text-transform: none;
+            letter-spacing: normal;
+            font-weight: 400;
         }
 
-        /* Cards */
-        .project-card {
+        /* Blog Controls */
+        .blog-controls {
             background-color: var(--dark-grey);
             border: 1px solid var(--border-grey);
             border-radius: 8px;
-            padding: 2rem;
+            padding: 1.5rem;
             margin-bottom: 2rem;
+        }
+
+        .filter-controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .filter-label {
+            color: var(--accent-white);
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-right: 0.5rem;
+        }
+
+        .select select {
+            background-color: var(--primary-grey);
+            border: 1px solid var(--border-grey);
+            color: var(--accent-white);
+            border-radius: 4px;
+            padding: 0.5rem 0.75rem;
+        }
+
+        .select select:focus {
+            border-color: var(--accent-white);
+            box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2);
+        }
+
+        .search-box {
+            position: relative;
+            flex-grow: 1;
+            max-width: 300px;
+        }
+
+        .search-input {
+            background-color: var(--primary-grey);
+            border: 1px solid var(--border-grey);
+            color: var(--accent-white);
+            border-radius: 4px;
+            padding: 0.5rem 0.75rem 0.5rem 2.5rem;
+            width: 100%;
+        }
+
+        .search-input:focus {
+            border-color: var(--accent-white);
+            box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--light-grey);
+        }
+
+        /* Blog Posts */
+        .blog-posts {
+            display: grid;
+            gap: 2rem;
+        }
+
+        .blog-post {
+            background-color: var(--dark-grey);
+            border: 1px solid var(--border-grey);
+            border-radius: 8px;
+            overflow: hidden;
             transition: transform 0.3s ease, border-color 0.3s ease;
         }
 
-        .project-card:hover {
+        .blog-post:hover {
             transform: translateY(-5px);
             border-color: var(--light-grey);
         }
 
-        .project-title {
-            color: var(--accent-white);
-            font-size: 1.8rem;
-            margin-bottom: 1rem;
+        .blog-post-header {
+            padding: 2rem 2rem 0;
         }
 
-        .project-description {
+        .blog-post-title {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--accent-white);
+        }
+
+        .blog-post-title a {
+            color: var(--accent-white);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .blog-post-title a:hover {
             color: var(--light-grey);
+        }
+
+        .blog-meta {
+            color: var(--light-grey);
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .blog-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .blog-post-content {
+            padding: 0 2rem 2rem;
+        }
+
+        .blog-excerpt {
+            color: var(--light-grey);
+            line-height: 1.7;
             margin-bottom: 1.5rem;
         }
 
-        .project-links {
+        .blog-tags {
             display: flex;
-            gap: 1rem;
+            gap: 0.5rem;
             flex-wrap: wrap;
+            margin-bottom: 1rem;
         }
 
-        .btn {
-            background-color: var(--accent-white);
-            color: var(--primary-black);
-            border: none;
-            padding: 0.75rem 1.5rem;
+        .tag {
+            background-color: var(--primary-grey);
+            color: var(--accent-white);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            text-decoration: none;
+            transition: background-color 0.3s ease;
+        }
+
+        .tag:hover {
+            background-color: var(--light-grey);
+            color: var(--accent-white);
+        }
+
+        .read-more {
+            color: var(--accent-white);
             text-decoration: none;
             font-family: 'Inter', sans-serif;
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.05em;
-            border-radius: 4px;
-            transition: all 0.3s ease;
-            display: inline-block;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: color 0.3s ease;
         }
 
-        .btn:hover {
-            background-color: var(--light-grey);
-            color: var(--accent-white);
-            transform: translateY(-2px);
+        .read-more:hover {
+            color: var(--light-grey);
         }
 
-        .btn-outline {
-            background-color: transparent;
-            color: var(--accent-white);
-            border: 2px solid var(--accent-white);
+        .read-more i {
+            transition: transform 0.3s ease;
         }
 
-        .btn-outline:hover {
-            background-color: var(--accent-white);
-            color: var(--primary-black);
+        .read-more:hover i {
+            transform: translateX(3px);
         }
 
-        /* Forms */
-        .form-container {
+        /* Pagination */
+        .pagination-wrapper {
+            margin-top: 3rem;
+            text-align: center;
+        }
+
+        .pagination {
             background-color: var(--dark-grey);
             border: 1px solid var(--border-grey);
             border-radius: 8px;
-            padding: 2rem;
-            max-width: 600px;
-            margin: 0 auto;
+            padding: 1rem;
+            display: inline-flex;
+            gap: 0.5rem;
         }
 
-        .field {
-            margin-bottom: 1.5rem;
-        }
-
-        .label {
+        .pagination-link {
+            background-color: var(--primary-grey);
             color: var(--accent-white);
+            border: 1px solid var(--border-grey);
+            padding: 0.5rem 1rem;
+            text-decoration: none;
+            border-radius: 4px;
+            transition: all 0.3s ease;
             font-family: 'Inter', sans-serif;
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.05em;
-            margin-bottom: 0.5rem;
+            font-size: 0.8rem;
         }
 
-        .input, .textarea, .select select {
-            background-color: var(--primary-grey);
-            border: 1px solid var(--border-grey);
-            color: var(--accent-white);
-            border-radius: 4px;
-            padding: 0.75rem;
-            width: 100%;
+        .pagination-link:hover {
+            background-color: var(--accent-white);
+            color: var(--primary-black);
         }
 
-        .input:focus, .textarea:focus, .select select:focus {
-            border-color: var(--accent-white);
-            box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2);
+        .pagination-link.is-current {
+            background-color: var(--accent-white);
+            color: var(--primary-black);
         }
 
-        .input::placeholder, .textarea::placeholder {
+        .pagination-link:disabled {
+            background-color: var(--border-grey);
             color: var(--light-grey);
+            cursor: not-allowed;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--light-grey);
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            color: var(--border-grey);
+        }
+
+        .empty-state h3 {
+            color: var(--light-grey);
+            margin-bottom: 1rem;
         }
 
         /* Footer */
@@ -231,7 +393,7 @@
             border-top: 1px solid var(--border-grey);
             padding: 2rem 0;
             text-align: center;
-            margin-top: auto;
+            margin-top: 3rem;
         }
 
         .footer-links {
@@ -252,146 +414,62 @@
             color: var(--accent-white);
         }
 
-        .copyright {
+        /* Loading State */
+        .loading {
+            text-align: center;
+            padding: 4rem 2rem;
             color: var(--light-grey);
-            font-size: 0.9rem;
         }
 
-        /* Blog Styles */
-        .blog-post {
-            background-color: var(--dark-grey);
-            border: 1px solid var(--border-grey);
-            border-radius: 8px;
-            padding: 2rem;
-            margin-bottom: 2rem;
+        .spinner {
+            border: 2px solid var(--border-grey);
+            border-top: 2px solid var(--accent-white);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
         }
 
-        .blog-meta {
-            color: var(--light-grey);
-            font-size: 0.9rem;
-            margin-bottom: 1rem;
-            display: flex;
-            gap: 1rem;
-            flex-wrap: wrap;
-        }
-
-        .blog-tags {
-            display: flex;
-            gap: 0.5rem;
-            flex-wrap: wrap;
-            margin-top: 1rem;
-        }
-
-        .tag {
-            background-color: var(--primary-grey);
-            color: var(--accent-white);
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        /* Music Catalog Styles */
-        .album-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-            margin-top: 2rem;
-        }
-
-        .album-card {
-            background-color: var(--dark-grey);
-            border: 1px solid var(--border-grey);
-            border-radius: 8px;
-            overflow: hidden;
-            transition: transform 0.3s ease;
-        }
-
-        .album-card:hover {
-            transform: translateY(-5px);
-        }
-
-        .album-artwork {
-            width: 100%;
-            height: 300px;
-            background-color: var(--primary-grey);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--light-grey);
-            cursor: pointer;
-        }
-
-        .album-info {
-            padding: 1.5rem;
-        }
-
-        .album-title {
-            font-size: 1.25rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .album-artist {
-            color: var(--light-grey);
-            margin-bottom: 1rem;
-        }
-
-        .album-details {
-            color: var(--light-grey);
-            font-size: 0.9rem;
-            margin-bottom: 1rem;
-        }
-
-        .streaming-links {
-            display: flex;
-            gap: 0.5rem;
-            flex-wrap: wrap;
-        }
-
-        .streaming-link {
-            background-color: var(--primary-grey);
-            color: var(--accent-white);
-            padding: 0.5rem 1rem;
-            border-radius: 4px;
-            text-decoration: none;
-            font-size: 0.8rem;
-            transition: background-color 0.3s ease;
-        }
-
-        .streaming-link:hover {
-            background-color: var(--light-grey);
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
         /* Responsive */
         @media (max-width: 768px) {
-            .hero-title {
+            .page-title {
                 font-size: 2rem;
             }
 
-            .hero-subtitle {
+            .page-subtitle {
                 font-size: 1rem;
             }
 
-            .project-links {
+            .filter-controls {
                 flex-direction: column;
+                align-items: stretch;
+            }
+
+            .search-box {
+                max-width: none;
+            }
+
+            .blog-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+                align-items: flex-start;
             }
 
             .footer-links {
                 flex-direction: column;
                 gap: 1rem;
             }
-
-            .album-grid {
-                grid-template-columns: 1fr;
-            }
         }
 
         /* Utility Classes */
         .hidden { display: none !important; }
         .text-center { text-align: center; }
-        .mb-2 { margin-bottom: 1rem; }
-        .mt-2 { margin-top: 1rem; }
     </style>
 </head>
 <body>
@@ -399,7 +477,7 @@
     <header class="header">
         <nav class="navbar container" role="navigation" aria-label="main navigation">
             <div class="navbar-brand">
-                <a class="navbar-item" href="#home">
+                <a class="navbar-item" href="/">
                     YEGGE
                 </a>
                 <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="navbarMain">
@@ -411,11 +489,11 @@
 
             <div id="navbarMain" class="navbar-menu">
                 <div class="navbar-end">
-                    <a class="navbar-item" href="#home">INDEX</a>
-                    <a class="navbar-item" href="#about">ABOUT</a>
-                    <a class="navbar-item" href="#music">MUSIC</a>
-                    <a class="navbar-item" href="#blog">BLOG</a>
-                    <a class="navbar-item" href="#subscribe">SUBSCRIBE</a>
+                    <a class="navbar-item" href="/">INDEX</a>
+                    <a class="navbar-item" href="/#about">ABOUT</a>
+                    <a class="navbar-item" href="/#music">MUSIC</a>
+                    <a class="navbar-item is-active" href="/blog.html">BLOG</a>
+                    <a class="navbar-item" href="/#subscribe">SUBSCRIBE</a>
                 </div>
             </div>
         </nav>
@@ -423,305 +501,74 @@
 
     <!-- Main Content -->
     <main class="main-content">
-        <!-- Home Section -->
-        <section id="home" class="section">
-            <div class="hero-section">
-                <div class="container">
-                    <h1 class="hero-title">YEGGE</h1>
-                    <p class="hero-subtitle">Independent Music Label featuring Angershade and The Corruptive</p>
-                    <div class="project-links">
-                        <a href="#music" class="btn">EXPLORE CATALOG</a>
-                        <a href="#subscribe" class="btn btn-outline">STAY UPDATED</a>
-                    </div>
-                </div>
-            </div>
-
+        <!-- Page Header -->
+        <section class="page-header">
             <div class="container">
-                <div class="columns is-multiline">
-                    <div class="column is-half">
-                        <div class="project-card">
-                            <h2 class="project-title">ANGERSHADE</h2>
-                            <p class="project-description">
-                                Dark electronic soundscapes that explore the depths of human emotion and digital consciousness.
-                            </p>
-                            <div class="project-links">
-                                <a href="https://hyperfollow.com/angershade" target="_blank" class="btn">LISTEN NOW</a>
-                                <a href="#" class="btn btn-outline">VIEW CATALOG</a>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="column is-half">
-                        <div class="project-card">
-                            <h2 class="project-title">THE CORRUPTIVE</h2>
-                            <p class="project-description">
-                                Experimental compositions that challenge conventional musical boundaries and push creative limits.
-                            </p>
-                            <div class="project-links">
-                                <a href="https://hyperfollow.com/thecorruptive" target="_blank" class="btn">LISTEN NOW</a>
-                                <a href="#" class="btn btn-outline">VIEW CATALOG</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <h1 class="page-title">BLOG</h1>
+                <p class="page-subtitle">Latest news, updates, and insights from Yegge, Angershade, and The Corruptive</p>
             </div>
         </section>
 
-        <!-- About Section -->
-        <section id="about" class="section hidden">
-            <div class="container">
-                <h1>ABOUT YEGGE</h1>
-                <div class="content">
-                    <p>Yegge is an independent music label founded by Brian Yegge, dedicated to pushing the boundaries of electronic and experimental music through two distinctive projects: Angershade and The Corruptive.</p>
+        <div class="container">
+            <!-- Blog Controls -->
+            <div class="blog-controls">
+                <div class="filter-controls">
+                    <span class="filter-label">FILTER:</span>
+                    <div class="select">
+                        <select id="categoryFilter">
+                            <option value="all">ALL CATEGORIES</option>
+                            <option value="yegge">YEGGE</option>
+                            <option value="angershade">ANGERSHADE</option>
+                            <option value="thecorruptive">THE CORRUPTIVE</option>
+                        </select>
+                    </div>
                     
-                    <p>Our mission is to create music that challenges conventional thinking and explores the intersection of technology, emotion, and human experience.</p>
-                    
-                    <h2>THE PROJECTS</h2>
-                    
-                    <h3>ANGERSHADE</h3>
-                    <p>Angershade represents the darker, more introspective side of electronic music, creating atmospheric soundscapes that delve into themes of isolation, technology, and the human condition.</p>
-                    
-                    <h3>THE CORRUPTIVE</h3>
-                    <p>The Corruptive explores experimental territories, breaking down traditional musical structures to rebuild them in unexpected ways, creating music that corrupts and transforms conventional expectations.</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- Music Section -->
-        <section id="music" class="section hidden">
-            <div class="container">
-                <h1>MUSIC CATALOG</h1>
-                
-                <!-- Filter Options -->
-                <div class="field has-addons mb-2">
-                    <div class="control">
-                        <div class="select">
-                            <select id="artistFilter">
-                                <option value="all">ALL ARTISTS</option>
-                                <option value="angershade">ANGERSHADE</option>
-                                <option value="thecorruptive">THE CORRUPTIVE</option>
-                            </select>
-                        </div>
+                    <div class="select">
+                        <select id="sortFilter">
+                            <option value="newest">NEWEST FIRST</option>
+                            <option value="oldest">OLDEST FIRST</option>
+                            <option value="title">TITLE A-Z</option>
+                        </select>
                     </div>
-                    <div class="control">
-                        <div class="select">
-                            <select id="statusFilter">
-                                <option value="released">RELEASED</option>
-                                <option value="all">ALL RELEASES</option>
-                                <option value="development">IN DEVELOPMENT</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
 
-                <!-- Albums Grid -->
-                <div class="album-grid" id="albumGrid">
-                    <!-- Sample Album Card -->
-                    <div class="album-card" data-artist="angershade" data-status="released">
-                        <div class="album-artwork" onclick="openGallery(['https://via.placeholder.com/400x400?text=Front+Cover'])">
-                            <i class="fas fa-image fa-3x"></i>
-                        </div>
-                        <div class="album-info">
-                            <h3 class="album-title">SAMPLE ALBUM</h3>
-                            <p class="album-artist">ANGERSHADE</p>
-                            <div class="album-details">
-                                <p><strong>TYPE:</strong> EP</p>
-                                <p><strong>CATALOG:</strong> YGG-I</p>
-                                <p><strong>RELEASE:</strong> 2025-01-01</p>
-                            </div>
-                            <div class="streaming-links">
-                                <a href="#" class="streaming-link">SPOTIFY</a>
-                                <a href="#" class="streaming-link">APPLE MUSIC</a>
-                                <a href="#" class="streaming-link">YOUTUBE</a>
-                            </div>
-                        </div>
+                    <div class="search-box">
+                        <input type="text" class="search-input" id="searchInput" placeholder="Search posts...">
+                        <i class="fas fa-search search-icon"></i>
                     </div>
                 </div>
             </div>
-        </section>
 
-        <!-- Blog Section -->
-        <section id="blog" class="section hidden">
-            <div class="container">
-                <h1>BLOG</h1>
-                
-                <!-- Blog Filters -->
-                <div class="field has-addons mb-2">
-                    <div class="control">
-                        <div class="select">
-                            <select id="blogFilter">
-                                <option value="all">ALL POSTS</option>
-                                <option value="angershade">ANGERSHADE</option>
-                                <option value="thecorruptive">THE CORRUPTIVE</option>
-                                <option value="yegge">YEGGE</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
+            <!-- Loading State -->
+            <div id="loading" class="loading">
+                <div class="spinner"></div>
+                <p>Loading blog posts...</p>
+            </div>
 
-                <!-- Blog Posts -->
-                <div id="blogPosts">
-                    <!-- Sample Blog Post -->
-                    <article class="blog-post" data-category="yegge">
-                        <h2>WELCOME TO YEGGE</h2>
-                        <div class="blog-meta">
-                            <span><i class="fas fa-calendar"></i> August 19, 2025</span>
-                            <span><i class="fas fa-folder"></i> YEGGE</span>
-                            <span><i class="fas fa-user"></i> Brian Yegge</span>
-                        </div>
-                        <div class="content">
-                            <p>Welcome to the official Yegge website. This platform will serve as the central hub for both Angershade and The Corruptive projects, featuring our complete music catalog, updates, and exclusive content.</p>
-                        </div>
-                        <div class="blog-tags">
-                            <span class="tag">announcement</span>
-                            <span class="tag">yegge</span>
-                            <span class="tag">music</span>
-                        </div>
-                    </article>
+            <!-- Blog Posts -->
+            <div id="blogPosts" class="blog-posts hidden">
+                <!-- Blog posts will be loaded here dynamically -->
+            </div>
+
+            <!-- Empty State -->
+            <div id="emptyState" class="empty-state hidden">
+                <i class="fas fa-file-alt"></i>
+                <h3>NO POSTS FOUND</h3>
+                <p>No blog posts match your current filters. Try adjusting your search criteria.</p>
+            </div>
+
+            <!-- Pagination -->
+            <div id="pagination" class="pagination-wrapper hidden">
+                <div class="pagination">
+                    <a href="#" class="pagination-link" id="prevPage" onclick="changePage(-1)">
+                        <i class="fas fa-chevron-left"></i> PREV
+                    </a>
+                    <span id="pageNumbers"></span>
+                    <a href="#" class="pagination-link" id="nextPage" onclick="changePage(1)">
+                        NEXT <i class="fas fa-chevron-right"></i>
+                    </a>
                 </div>
             </div>
-        </section>
-
-        <!-- Subscribe Section -->
-        <section id="subscribe" class="section hidden">
-            <div class="container">
-                <h1 class="text-center">STAY UPDATED</h1>
-                <p class="text-center mb-2">Subscribe to receive updates about new releases, shows, and exclusive content from Yegge, Angershade, and The Corruptive.</p>
-                
-                <div class="form-container">
-                    <form id="subscribeForm">
-                        <div class="field">
-                            <label class="label">FIRST NAME</label>
-                            <div class="control">
-                                <input class="input" type="text" name="firstName" required>
-                            </div>
-                        </div>
-
-                        <div class="field">
-                            <label class="label">LAST NAME</label>
-                            <div class="control">
-                                <input class="input" type="text" name="lastName" required>
-                            </div>
-                        </div>
-
-                        <div class="field">
-                            <label class="label">EMAIL ADDRESS</label>
-                            <div class="control">
-                                <input class="input" type="email" name="email" required>
-                            </div>
-                        </div>
-
-                        <div class="field">
-                            <label class="label">PHONE NUMBER</label>
-                            <div class="control">
-                                <input class="input" type="tel" name="phone">
-                            </div>
-                        </div>
-
-                        <div class="field">
-                            <label class="label">COUNTRY</label>
-                            <div class="control">
-                                <div class="select is-fullwidth">
-                                    <select name="country" required>
-                                        <option value="">Select Country</option>
-                                        <option value="US">United States</option>
-                                        <option value="CA">Canada</option>
-                                        <option value="GB">United Kingdom</option>
-                                        <option value="DE">Germany</option>
-                                        <option value="FR">France</option>
-                                        <option value="JP">Japan</option>
-                                        <option value="AU">Australia</option>
-                                        <!-- Add more countries as needed -->
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="field">
-                            <div class="control">
-                                <label class="checkbox">
-                                    <input type="checkbox" name="subscribe" checked>
-                                    <span style="color: var(--accent-white); margin-left: 0.5rem;">Subscribe for updates</span>
-                                </label>
-                            </div>
-                        </div>
-
-                        <div class="field">
-                            <div class="control">
-                                <button type="submit" class="btn" style="width: 100%;">SUBSCRIBE</button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </section>
-
-        <!-- Contact/Inquiry Section -->
-        <section id="contact" class="section hidden">
-            <div class="container">
-                <h1 class="text-center">CONTACT & INQUIRY</h1>
-                <p class="text-center mb-2">Get in touch for collaborations, licensing, or general inquiries.</p>
-                
-                <div class="form-container">
-                    <form id="contactForm">
-                        <div class="field">
-                            <label class="label">FIRST NAME</label>
-                            <div class="control">
-                                <input class="input" type="text" name="firstName" required>
-                            </div>
-                        </div>
-
-                        <div class="field">
-                            <label class="label">LAST NAME</label>
-                            <div class="control">
-                                <input class="input" type="text" name="lastName" required>
-                            </div>
-                        </div>
-
-                        <div class="field">
-                            <label class="label">EMAIL ADDRESS</label>
-                            <div class="control">
-                                <input class="input" type="email" name="email" required>
-                            </div>
-                        </div>
-
-                        <div class="field">
-                            <label class="label">PHONE NUMBER</label>
-                            <div class="control">
-                                <input class="input" type="tel" name="phone">
-                            </div>
-                        </div>
-
-                        <div class="field">
-                            <label class="label">PREFERRED MESSENGER</label>
-                            <div class="control">
-                                <div class="select is-fullwidth">
-                                    <select name="messenger">
-                                        <option value="">Select Preferred Method</option>
-                                        <option value="imessage">iMessage</option>
-                                        <option value="sms">SMS</option>
-                                        <option value="facebook">Facebook Messenger</option>
-                                        <option value="whatsapp">WhatsApp</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="field">
-                            <label class="label">MESSAGE</label>
-                            <div class="control">
-                                <textarea class="textarea" name="message" rows="6" required placeholder="Tell us about your inquiry..."></textarea>
-                            </div>
-                        </div>
-
-                        <div class="field">
-                            <div class="control">
-                                <button type="submit" class="btn" style="width: 100%;">SEND INQUIRY</button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </section>
+        </div>
     </main>
 
     <!-- Footer -->
@@ -735,29 +582,29 @@
                 <a href="#" target="_blank">FACEBOOK</a>
                 <a href="#" target="_blank">INSTAGRAM</a>
                 <a href="#" target="_blank">TIKTOK</a>
-                <a href="#terms">TERMS</a>
-                <a href="#privacy">PRIVACY POLICY</a>
-                <a href="#contact">SUBMIT INQUIRY</a>
-                <a href="#branding">BRANDING</a>
+                <a href="/terms.html">TERMS</a>
+                <a href="/privacy.html">PRIVACY POLICY</a>
+                <a href="/#contact">SUBMIT INQUIRY</a>
             </div>
         </div>
     </footer>
 
-    <!-- Image Gallery Modal -->
-    <div id="galleryModal" class="modal">
-        <div class="modal-background" onclick="closeGallery()"></div>
-        <div class="modal-content">
-            <p class="image">
-                <img id="galleryImage" src="" alt="Gallery Image">
-            </p>
-        </div>
-        <button class="modal-close is-large" onclick="closeGallery()"></button>
-    </div>
-
     <script>
+        // Configuration
+        const POSTS_PER_PAGE = 10;
+        let currentPage = 1;
+        let allPosts = [];
+        let filteredPosts = [];
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeNavigation();
+            loadBlogPosts();
+            setupEventListeners();
+        });
+
         // Navigation functionality
-        document.addEventListener('DOMContentLoaded', function () {
-            // Mobile menu toggle
+        function initializeNavigation() {
             const navbarBurger = document.querySelector('.navbar-burger');
             const navbarMenu = document.querySelector('.navbar-menu');
 
@@ -767,395 +614,324 @@
                     navbarMenu.classList.toggle('is-active');
                 });
             }
-
-            // Section navigation
-            const navLinks = document.querySelectorAll('.navbar-item[href^="#"]');
-            const sections = document.querySelectorAll('section[id]');
-
-            navLinks.forEach(link => {
-                link.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    const targetId = link.getAttribute('href').substring(1);
-                    showSection(targetId);
-                    
-                    // Close mobile menu if open
-                    if (navbarMenu.classList.contains('is-active')) {
-                        navbarBurger.classList.remove('is-active');
-                        navbarMenu.classList.remove('is-active');
-                    }
-                });
-            });
-
-            // Initialize with home section
-            showSection('home');
-        });
-
-        function showSection(sectionId) {
-            // Hide all sections
-            const sections = document.querySelectorAll('section[id]');
-            sections.forEach(section => section.classList.add('hidden'));
-            
-            // Show target section
-            const targetSection = document.getElementById(sectionId);
-            if (targetSection) {
-                targetSection.classList.remove('hidden');
-            }
-
-            // Update active navigation
-            const navLinks = document.querySelectorAll('.navbar-item[href^="#"]');
-            navLinks.forEach(link => link.classList.remove('is-active'));
-            const activeLink = document.querySelector(`.navbar-item[href="#${sectionId}"]`);
-            if (activeLink) activeLink.classList.add('is-active');
         }
 
-        // Filter functionality
-        function initializeFilters() {
-            const artistFilter = document.getElementById('artistFilter');
-            const statusFilter = document.getElementById('statusFilter');
-            const blogFilter = document.getElementById('blogFilter');
-
-            if (artistFilter) {
-                artistFilter.addEventListener('change', filterAlbums);
-            }
-            if (statusFilter) {
-                statusFilter.addEventListener('change', filterAlbums);
-            }
-            if (blogFilter) {
-                blogFilter.addEventListener('change', filterBlogPosts);
-            }
+        // Event listeners
+        function setupEventListeners() {
+            document.getElementById('categoryFilter').addEventListener('change', filterPosts);
+            document.getElementById('sortFilter').addEventListener('change', filterPosts);
+            document.getElementById('searchInput').addEventListener('input', debounce(filterPosts, 300));
         }
 
-        function filterAlbums() {
-            const artistFilter = document.getElementById('artistFilter').value;
-            const statusFilter = document.getElementById('statusFilter').value;
-            const albums = document.querySelectorAll('.album-card');
-
-            albums.forEach(album => {
-                const albumArtist = album.getAttribute('data-artist');
-                const albumStatus = album.getAttribute('data-status');
-                
-                let showArtist = artistFilter === 'all' || albumArtist === artistFilter;
-                let showStatus = statusFilter === 'all' || albumStatus === statusFilter;
-                
-                if (showArtist && showStatus) {
-                    album.style.display = 'block';
-                } else {
-                    album.style.display = 'none';
-                }
-            });
-        }
-
-        function filterBlogPosts() {
-            const filter = document.getElementById('blogFilter').value;
-            const posts = document.querySelectorAll('.blog-post');
-
-            posts.forEach(post => {
-                const category = post.getAttribute('data-category');
-                if (filter === 'all' || category === filter) {
-                    post.style.display = 'block';
-                } else {
-                    post.style.display = 'none';
-                }
-            });
-        }
-
-        // Gallery functionality
-        function openGallery(images) {
-            const modal = document.getElementById('galleryModal');
-            const image = document.getElementById('galleryImage');
-            image.src = images[0]; // Show first image
-            modal.classList.add('is-active');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeGallery() {
-            const modal = document.getElementById('galleryModal');
-            modal.classList.remove('is-active');
-            document.body.style.overflow = 'auto';
-        }
-
-        // Form submission handlers
-        document.addEventListener('DOMContentLoaded', function() {
-            const subscribeForm = document.getElementById('subscribeForm');
-            const contactForm = document.getElementById('contactForm');
-
-            if (subscribeForm) {
-                subscribeForm.addEventListener('submit', handleSubscribeSubmit);
-            }
-
-            if (contactForm) {
-                contactForm.addEventListener('submit', handleContactSubmit);
-            }
-
-            initializeFilters();
-        });
-
-        async function handleSubscribeSubmit(e) {
-            e.preventDefault();
-            const formData = new FormData(e.target);
-            const data = Object.fromEntries(formData);
-            
-            // Here you would integrate with your backend service (Supabase, etc.)
-            console.log('Subscribe form data:', data);
-            
-            // Show success message (replace with actual implementation)
-            alert('Thank you for subscribing! You will receive updates about new releases and exclusive content.');
-            e.target.reset();
-        }
-
-        async function handleContactSubmit(e) {
-            e.preventDefault();
-            const formData = new FormData(e.target);
-            const data = Object.fromEntries(formData);
-            
-            // Here you would integrate with your backend service
-            console.log('Contact form data:', data);
-            
-            // Show success message (replace with actual implementation)
-            alert('Thank you for your inquiry! We will get back to you soon.');
-            e.target.reset();
-        }
-
-        // Airtable Integration Functions (to be implemented)
-        class MusicDatabase {
-            constructor(airtableApiKey, baseId) {
-                this.apiKey = airtableApiKey;
-                this.baseId = baseId;
-                this.baseUrl = `https://api.airtable.com/v0/${baseId}`;
-            }
-
-            async getAlbums(filters = {}) {
-                try {
-                    let url = `${this.baseUrl}/Albums`;
-                    const params = new URLSearchParams();
-                    
-                    if (filters.artist) {
-                        params.append('filterByFormula', `{Album Artist} = "${filters.artist}"`);
-                    }
-                    
-                    if (filters.status) {
-                        params.append('filterByFormula', `{Album Status} = "${filters.status}"`);
-                    }
-
-                    if (params.toString()) {
-                        url += `?${params.toString()}`;
-                    }
-
-                    const response = await fetch(url, {
-                        headers: {
-                            'Authorization': `Bearer ${this.apiKey}`,
-                            'Content-Type': 'application/json'
-                        }
-                    });
-
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-
-                    const data = await response.json();
-                    return data.records;
-                } catch (error) {
-                    console.error('Error fetching albums:', error);
-                    return [];
-                }
-            }
-
-            async getTracks(albumId) {
-                try {
-                    const url = `${this.baseUrl}/Tracks?filterByFormula={Album ID} = "${albumId}"`;
-                    
-                    const response = await fetch(url, {
-                        headers: {
-                            'Authorization': `Bearer ${this.apiKey}`,
-                            'Content-Type': 'application/json'
-                        }
-                    });
-
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-
-                    const data = await response.json();
-                    return data.records;
-                } catch (error) {
-                    console.error('Error fetching tracks:', error);
-                    return [];
-                }
-            }
-
-            async getBlogPosts(filters = {}) {
-                try {
-                    let url = `${this.baseUrl}/Blog Posts`;
-                    const params = new URLSearchParams();
-                    
-                    if (filters.category) {
-                        params.append('filterByFormula', `{Category} = "${filters.category}"`);
-                    }
-
-                    // Only show published posts
-                    params.append('filterByFormula', `{Status} = "Published"`);
-                    params.append('sort[0][field]', 'Publish Date');
-                    params.append('sort[0][direction]', 'desc');
-
-                    if (params.toString()) {
-                        url += `?${params.toString()}`;
-                    }
-
-                    const response = await fetch(url, {
-                        headers: {
-                            'Authorization': `Bearer ${this.apiKey}`,
-                            'Content-Type': 'application/json'
-                        }
-                    });
-
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-
-                    const data = await response.json();
-                    return data.records;
-                } catch (error) {
-                    console.error('Error fetching blog posts:', error);
-                    return [];
-                }
-            }
-        }
-
-        // Initialize database connection (replace with your actual credentials)
-        // const musicDB = new MusicDatabase('your_airtable_api_key', 'your_base_id');
-
-        // Dynamic content loading functions
-        async function loadAlbums() {
-            // Replace with actual Airtable integration
-            // const albums = await musicDB.getAlbums();
-            // renderAlbums(albums);
-        }
-
+        // Load blog posts from Airtable
         async function loadBlogPosts() {
-            // Replace with actual Airtable integration
-            // const posts = await musicDB.getBlogPosts();
-            // renderBlogPosts(posts);
+            try {
+                showLoading(true);
+                
+                // In production, replace with your actual Airtable API call
+                const posts = await fetchBlogPosts();
+                
+                allPosts = posts;
+                filteredPosts = [...allPosts];
+                
+                renderBlogPosts();
+                showLoading(false);
+            } catch (error) {
+                console.error('Error loading blog posts:', error);
+                showEmptyState();
+                showLoading(false);
+            }
         }
 
-        function renderAlbums(albums) {
-            const albumGrid = document.getElementById('albumGrid');
-            if (!albumGrid) return;
-
-            albumGrid.innerHTML = '';
-
-            albums.forEach(album => {
-                const fields = album.fields;
-                const albumCard = createAlbumCard(fields);
-                albumGrid.appendChild(albumCard);
-            });
-        }
-
-        function createAlbumCard(fields) {
-            const card = document.createElement('div');
-            card.className = 'album-card';
-            card.setAttribute('data-artist', fields['Album Artist']?.toLowerCase().replace(/\s+/g, ''));
-            card.setAttribute('data-status', fields['Album Status']?.toLowerCase());
-
-            const artworkImages = fields['Artwork Gallery'] || [];
-            const frontCover = artworkImages.find(img => img.filename?.includes('front')) || artworkImages[0];
-
-            card.innerHTML = `
-                <div class="album-artwork" onclick="openGallery(['${frontCover?.url || 'https://via.placeholder.com/400x400?text=No+Image'}'])">
-                    ${frontCover ? `<img src="${frontCover.url}" alt="${fields['Album Name']} Cover" style="width: 100%; height: 100%; object-fit: cover;">` : '<i class="fas fa-image fa-3x"></i>'}
-                </div>
-                <div class="album-info">
-                    <h3 class="album-title">${fields['Album Name'] || 'Untitled'}</h3>
-                    <p class="album-artist">${fields['Album Artist'] || 'Unknown Artist'}</p>
-                    <div class="album-details">
-                        <p><strong>TYPE:</strong> ${fields['Album Type'] || 'Unknown'}</p>
-                        <p><strong>CATALOG:</strong> ${fields['Catalog No.'] || 'N/A'}</p>
-                        <p><strong>RELEASE:</strong> ${fields['Release Date'] ? new Date(fields['Release Date']).toLocaleDateString() : 'TBA'}</p>
-                    </div>
-                    ${createStreamingLinks(fields)}
-                </div>
-            `;
-
-            return card;
-        }
-
-        function createStreamingLinks(fields) {
-            const links = [];
-            const streamingServices = ['Apple Music', 'Spotify', 'Youtube Music', 'iTunes', 'Amazon Music', 'Tidal'];
+        // Fetch blog posts (placeholder - replace with actual Airtable integration)
+        async function fetchBlogPosts() {
+            // Simulate API delay
+            await new Promise(resolve => setTimeout(resolve, 1000));
             
-            streamingServices.forEach(service => {
-                if (fields[service]) {
-                    links.push(`<a href="${fields[service]}" target="_blank" class="streaming-link">${service.toUpperCase()}</a>`);
+            // Sample data - replace with actual Airtable API call
+            return [
+                {
+                    id: '1',
+                    title: 'Welcome to Yegge',
+                    content: 'Welcome to the official Yegge website. This platform serves as the central hub for both Angershade and The Corruptive projects...',
+                    excerpt: 'Welcome to the official Yegge website. This platform serves as the central hub for both Angershade and The Corruptive projects, featuring our complete music catalog, updates, and exclusive content.',
+                    category: 'yegge',
+                    tags: ['announcement', 'yegge', 'music'],
+                    author: 'Brian Yegge',
+                    publishDate: '2025-08-19T10:00:00Z',
+                    slug: 'welcome-to-yegge'
+                },
+                {
+                    id: '2',
+                    title: 'New Angershade Release Coming Soon',
+                    content: 'Exciting news for Angershade fans - a new EP is in the final stages of production...',
+                    excerpt: 'Exciting news for Angershade fans - a new EP is in the final stages of production. Get a preview of what\'s coming in this exclusive update.',
+                    category: 'angershade',
+                    tags: ['angershade', 'release', 'ep'],
+                    author: 'Brian Yegge',
+                    publishDate: '2025-08-15T14:30:00Z',
+                    slug: 'new-angershade-release-coming-soon'
+                },
+                {
+                    id: '3',
+                    title: 'The Corruptive: Experimental Boundaries',
+                    content: 'Exploring the creative process behind The Corruptive\'s latest experimental compositions...',
+                    excerpt: 'Exploring the creative process behind The Corruptive\'s latest experimental compositions and the technology used to push musical boundaries.',
+                    category: 'thecorruptive',
+                    tags: ['thecorruptive', 'experimental', 'process'],
+                    author: 'Brian Yegge',
+                    publishDate: '2025-08-10T16:45:00Z',
+                    slug: 'the-corruptive-experimental-boundaries'
+                }
+            ];
+        }
+
+        // Filter and sort posts
+        function filterPosts() {
+            const category = document.getElementById('categoryFilter').value;
+            const sort = document.getElementById('sortFilter').value;
+            const search = document.getElementById('searchInput').value.toLowerCase();
+
+            // Filter by category
+            let filtered = allPosts.filter(post => {
+                if (category === 'all') return true;
+                return post.category.toLowerCase() === category;
+            });
+
+            // Filter by search term
+            if (search) {
+                filtered = filtered.filter(post => 
+                    post.title.toLowerCase().includes(search) ||
+                    post.excerpt.toLowerCase().includes(search) ||
+                    post.tags.some(tag => tag.toLowerCase().includes(search))
+                );
+            }
+
+            // Sort posts
+            filtered.sort((a, b) => {
+                switch (sort) {
+                    case 'newest':
+                        return new Date(b.publishDate) - new Date(a.publishDate);
+                    case 'oldest':
+                        return new Date(a.publishDate) - new Date(b.publishDate);
+                    case 'title':
+                        return a.title.localeCompare(b.title);
+                    default:
+                        return 0;
                 }
             });
 
-            return links.length > 0 ? `<div class="streaming-links">${links.join('')}</div>` : '';
+            filteredPosts = filtered;
+            currentPage = 1;
+            renderBlogPosts();
         }
 
-        function renderBlogPosts(posts) {
-            const blogContainer = document.getElementById('blogPosts');
-            if (!blogContainer) return;
+        // Render blog posts
+        function renderBlogPosts() {
+            const container = document.getElementById('blogPosts');
+            const emptyState = document.getElementById('emptyState');
+            const pagination = document.getElementById('pagination');
 
-            blogContainer.innerHTML = '';
+            if (filteredPosts.length === 0) {
+                container.classList.add('hidden');
+                emptyState.classList.remove('hidden');
+                pagination.classList.add('hidden');
+                return;
+            }
 
-            posts.forEach(post => {
-                const fields = post.fields;
-                const postElement = createBlogPost(fields);
-                blogContainer.appendChild(postElement);
+            emptyState.classList.add('hidden');
+            container.classList.remove('hidden');
+
+            // Calculate pagination
+            const startIndex = (currentPage - 1) * POSTS_PER_PAGE;
+            const endIndex = startIndex + POSTS_PER_PAGE;
+            const paginatedPosts = filteredPosts.slice(startIndex, endIndex);
+
+            // Render posts
+            container.innerHTML = paginatedPosts.map(post => createBlogPostHTML(post)).join('');
+
+            // Render pagination
+            renderPagination();
+        }
+
+        // Create blog post HTML
+        function createBlogPostHTML(post) {
+            const publishDate = new Date(post.publishDate).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
             });
-        }
 
-        function createBlogPost(fields) {
-            const article = document.createElement('article');
-            article.className = 'blog-post';
-            article.setAttribute('data-category', fields.Category?.toLowerCase());
+            const tagsHTML = post.tags.map(tag => 
+                `<a href="#" class="tag" onclick="filterByTag('${tag}')">${tag}</a>`
+            ).join('');
 
-            const publishDate = fields['Publish Date'] ? new Date(fields['Publish Date']).toLocaleDateString() : 'Unknown Date';
-            const tags = fields.Tags ? fields.Tags.split(',').map(tag => `<span class="tag">${tag.trim()}</span>`).join('') : '';
-
-            article.innerHTML = `
-                <h2>${fields.Title || 'Untitled Post'}</h2>
-                <div class="blog-meta">
-                    <span><i class="fas fa-calendar"></i> ${publishDate}</span>
-                    <span><i class="fas fa-folder"></i> ${fields.Category || 'Uncategorized'}</span>
-                    <span><i class="fas fa-user"></i> ${fields.Author || 'Brian Yegge'}</span>
-                </div>
-                <div class="content">
-                    ${fields.Content || ''}
-                </div>
-                ${tags ? `<div class="blog-tags">${tags}</div>` : ''}
+            return `
+                <article class="blog-post">
+                    <div class="blog-post-header">
+                        <h2 class="blog-post-title">
+                            <a href="/blog/${post.slug}.html">${post.title}</a>
+                        </h2>
+                        <div class="blog-meta">
+                            <span><i class="fas fa-calendar"></i> ${publishDate}</span>
+                            <span><i class="fas fa-folder"></i> ${post.category.toUpperCase()}</span>
+                            <span><i class="fas fa-user"></i> ${post.author}</span>
+                        </div>
+                    </div>
+                    <div class="blog-post-content">
+                        <p class="blog-excerpt">${post.excerpt}</p>
+                        <div class="blog-tags">${tagsHTML}</div>
+                        <a href="/blog/${post.slug}.html" class="read-more">
+                            READ MORE <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </article>
             `;
-
-            return article;
         }
 
-        // Close modal when clicking outside
-        document.addEventListener('click', (e) => {
-            if (e.target.classList.contains('modal-background')) {
-                closeGallery();
+        // Render pagination
+        function renderPagination() {
+            const pagination = document.getElementById('pagination');
+            const pageNumbers = document.getElementById('pageNumbers');
+            const prevPage = document.getElementById('prevPage');
+            const nextPage = document.getElementById('nextPage');
+
+            const totalPages = Math.ceil(filteredPosts.length / POSTS_PER_PAGE);
+
+            if (totalPages <= 1) {
+                pagination.classList.add('hidden');
+                return;
             }
+
+            pagination.classList.remove('hidden');
+
+            // Update prev/next buttons
+            prevPage.style.opacity = currentPage === 1 ? '0.5' : '1';
+            prevPage.style.pointerEvents = currentPage === 1 ? 'none' : 'auto';
+            
+            nextPage.style.opacity = currentPage === totalPages ? '0.5' : '1';
+            nextPage.style.pointerEvents = currentPage === totalPages ? 'none' : 'auto';
+
+            // Create page numbers
+            let pageNumbersHTML = '';
+            for (let i = 1; i <= totalPages; i++) {
+                const isActive = i === currentPage ? 'is-current' : '';
+                pageNumbersHTML += `<a href="#" class="pagination-link ${isActive}" onclick="goToPage(${i})">${i}</a>`;
+            }
+            pageNumbers.innerHTML = pageNumbersHTML;
+        }
+
+        // Pagination functions
+        function changePage(direction) {
+            const totalPages = Math.ceil(filteredPosts.length / POSTS_PER_PAGE);
+            const newPage = currentPage + direction;
+            
+            if (newPage >= 1 && newPage <= totalPages) {
+                currentPage = newPage;
+                renderBlogPosts();
+                scrollToTop();
+            }
+        }
+
+        function goToPage(page) {
+            currentPage = page;
+            renderBlogPosts();
+            scrollToTop();
+        }
+
+        // Utility functions
+        function showLoading(show) {
+            const loading = document.getElementById('loading');
+            const blogPosts = document.getElementById('blogPosts');
+            const emptyState = document.getElementById('emptyState');
+
+            if (show) {
+                loading.classList.remove('hidden');
+                blogPosts.classList.add('hidden');
+                emptyState.classList.add('hidden');
+            } else {
+                loading.classList.add('hidden');
+            }
+        }
+
+        function showEmptyState() {
+            document.getElementById('emptyState').classList.remove('hidden');
+            document.getElementById('blogPosts').classList.add('hidden');
+        }
+
+        function filterByTag(tag) {
+            document.getElementById('searchInput').value = tag;
+            filterPosts();
+        }
+
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        // Handle URL parameters for filtering
+        function handleURLParams() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const category = urlParams.get('category');
+            const tag = urlParams.get('tag');
+
+            if (category) {
+                document.getElementById('categoryFilter').value = category;
+            }
+
+            if (tag) {
+                document.getElementById('searchInput').value = tag;
+            }
+
+            if (category || tag) {
+                filterPosts();
+            }
+        }
+
+        // Initialize URL params after posts are loaded
+        window.addEventListener('load', function() {
+            setTimeout(handleURLParams, 100);
         });
 
-        // Keyboard navigation
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                closeGallery();
+        // Update URL when filters change
+        function updateURL() {
+            const category = document.getElementById('categoryFilter').value;
+            const search = document.getElementById('searchInput').value;
+            
+            const params = new URLSearchParams();
+            
+            if (category !== 'all') {
+                params.set('category', category);
             }
-        });
+            
+            if (search.trim()) {
+                params.set('tag', search.trim());
+            }
+            
+            const newURL = params.toString() ? 
+                `${window.location.pathname}?${params.toString()}` : 
+                window.location.pathname;
+            
+            window.history.replaceState({}, '', newURL);
+        }
 
-        // Smooth scrolling for anchor links
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    target.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
-                }
-            });
-        });
+        // Update the filter functions to also update URL
+        const originalFilterPosts = filterPosts;
+        filterPosts = function() {
+            originalFilterPosts();
+            updateURL();
+        };
     </script>
 </body>
 </html>
-                

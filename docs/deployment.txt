@@ -1,0 +1,270 @@
+WEBSITE STRUCHTURE
+
+Below are some key features and points for Yegge.com, Angershade.com, & thecorruptive.com websites.
+git clone https://github.com/yegge/yegge.github.io.wiki.git
+
+FOLDER HIERARCHY
+
+yegge-website/
+├── index.html                  # Main website file
+├── admin.html                  # Admin panel (from admin-panel artifact)
+├── admin-login.html           # Admin login page (from admin-login artifact)
+├── terms.html                 # Terms of service page (from terms-page artifact)
+├── privacy.html               # Privacy policy page (similar to terms.html)
+├── _redirects                 # Cloudflare Pages redirects
+├── _headers                   # Security headers
+├── favicon.ico                # Website favicon
+├── robots.txt                 # Search engine instructions
+├── sitemap.xml                # SEO sitemap
+├── README.md                  # Project documentation
+├── package.json               # Project metadata (optional)
+├── assets/
+│   ├── css/
+│   │   ├── main.css          # Main stylesheet (extracted from HTML)
+│   │   └── admin.css         # Admin-specific styles
+│   ├── js/
+│   │   ├── app.js            # Main application JavaScript
+│   │   ├── admin.js          # Admin panel JavaScript
+│   │   └── airtable.js       # Airtable integration
+│   ├── images/
+│   │   ├── logo.png          # Main logo
+│   │   ├── logo-white.png    # White version of logo
+│   │   ├── favicon.ico       # Favicon file
+│   │   └── og-image.png      # Open Graph social media image
+│   └── media/                # Local media files (if not using R2)
+├── docs/
+│   ├── api-documentation.md  # API documentation
+│   ├── deployment-guide.md   # Deployment instructions
+│   └── airtable-setup.md     # Database setup guide
+└── .github/                  # GitHub specific files (if using GitHub)
+    └── workflows/
+        └── deploy.yml        # GitHub Actions deployment
+
+
+
+
+
+
+
+KEY STUFF
+
+# Domain-specific redirects  https://angershade.com/* https://yegge.com/?filter=angershade 301  https://thecorruptive.com/* https://yegge.com/?filter=thecorruptive 301   # Page redirects  /admin /admin-login.html 200  /terms /terms.html 200  /privacy /privacy.html 200   # SPA fallback  /* /index.html 200
+
+_headers
+
+/*
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  X-XSS-Protection: 1; mode=block
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://api.airtable.com
+
+robots.txt
+
+User-agent: *
+Allow: /
+
+# Block admin areas
+Disallow: /admin
+Disallow: /admin.html
+Disallow: /admin-login.html
+
+# Sitemap location
+Sitemap: https://yegge.com/sitemap.xml
+
+sitemap.xml
+
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://yegge.com/</loc>
+    <lastmod>2025-08-19</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://yegge.com/terms.html</loc>
+    <lastmod>2025-08-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://yegge.com/privacy.html</loc>
+    <lastmod>2025-08-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <!-- Add dynamic URLs for albums and blog posts -->
+</urlset>
+
+package.json (OPTIONAL)
+
+{
+  "name": "yegge-website",
+  "version": "1.0.0",
+  "description": "Official website for Yegge music label featuring Angershade and The Corruptive",
+  "keywords": ["music", "electronic", "experimental", "angershade", "the-corruptive"],
+  "author": "Brian Yegge",
+  "license": "Private",
+  "homepage": "https://yegge.com",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/brianyegge/yegge-website.git"
+  },
+  "scripts": {
+    "dev": "npx http-server . -p 3000",
+    "build": "echo 'Static site - no build needed'",
+    "deploy": "echo 'Deploy via Cloudflare Pages Git integration'"
+  },
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  }
+}
+
+
+Environment Configuration
+For Development (local testing)
+Create a .env file (never commit this):
+
+# Airtable Configuration
+AIRTABLE_API_KEY=your_personal_access_token_here
+AIRTABLE_BASE_ID=your_base_id_here
+
+# Admin Credentials (for testing only)
+ADMIN_USERNAME=brianyegge
+ADMIN_PASSWORD=YeggeAdmin2025!
+
+# Cloudflare R2 Configuration
+R2_ACCOUNT_ID=your_cloudflare_account_id
+R2_ACCESS_KEY_ID=your_r2_access_key
+R2_SECRET_ACCESS_KEY=your_r2_secret_key
+R2_BUCKET_NAME=yegge-media
+
+For Production (Cloudflare Pages)
+Set these environment variables in Cloudflare Pages dashboard:
+
+* AIRTABLE_API_KEY
+* AIRTABLE_BASE_ID
+* R2_ACCOUNT_ID
+* R2_ACCESS_KEY_ID
+* R2_SECRET_ACCESS_KEY
+* R2_BUCKET_NAME
+
+Key Features Implemented
+1. Multi-Domain Support
+* yegge.com: Main site showing all content
+* angershade.com: Filtered view for Angershade content
+* thecorruptive.com: Filtered view for The Corruptive content
+2. Content Management
+* Albums: Full metadata management with artwork galleries
+* Tracks: Individual track management with streaming links
+* Blog: Rich text blog with categories and tagging
+* Subscribers: Newsletter signup with country tracking
+* Inquiries: Contact form with preferred communication method
+3. Admin Features
+* Dashboard: Overview statistics and recent activity
+* Content Management: Add/edit albums, tracks, and blog posts
+* User Management: View subscribers and inquiries
+* Data Export: Backup capabilities
+* Rich Text Editor: WYSIWYG editing for blog posts
+4. Security Features
+* Admin Authentication: Simple but secure login system
+* Session Management: Configurable session duration
+* Security Headers: CSRF, XSS, and clickjacking protection
+* Access Control: Admin-only areas protected
+5. Performance Optimizations
+* Static Generation: Fast loading times
+* CDN Delivery: Cloudflare global network
+* Image Optimization: Automatic via Cloudflare
+* Caching: Browser and CDN caching configured
+
+
+Integration Points
+Airtable Database
+* 5 Tables: Albums, Tracks, Blog Posts, Subscribers, Contact Inquiries
+* API Integration: RESTful API calls with proper authentication
+* Real-time Updates: Content changes reflect immediately
+Cloudflare Services
+* Pages: Static site hosting with git integration
+* DNS: Domain management and redirects
+* R2 Storage: Media file storage and delivery
+* Analytics: Visitor tracking and performance monitoring
+Third-party Services
+* Streaming Platforms: Links to Spotify, Apple Music, etc.
+* Social Media: Integration with X, Facebook, Instagram, TikTok
+* Email: Form submissions can integrate with email services
+Customization Guide
+Styling
+* CSS Variables: Easy color scheme changes in :root
+* Typography: Google Fonts (Roboto + Inter) easily replaceable
+* Responsive Design: Mobile-first approach with Bulma framework
+Content Structure
+* Navigation: Easily modify menu items in header
+* Sections: Add/remove sections by updating navigation logic
+* Layout: Flexible grid system for different content types
+Functionality
+* Forms: Easy to add new form fields and validation
+* Filters: Expandable filtering system for catalog browsing
+* Search: Can be added with client-side or server-side search
+Maintenance Requirements
+Regular Tasks
+* Content Updates: Add new releases, blog posts, events
+* Security: Monitor login attempts, update admin credentials
+* Backups: Regular Airtable data exports
+* Analytics: Review visitor statistics and performance
+Monitoring
+* Uptime: Cloudflare provides 99.9% uptime SLA
+* Performance: Built-in Cloudflare analytics
+* Errors: Browser console and Cloudflare error logs
+* Security: Failed login attempt monitoring
+Updates
+* Dependencies: Minimal external dependencies to update
+* Content: All managed through Airtable interface
+* Code: Git-based deployment for any code changes
+* Domain: Annual domain renewal required
+
+Cost Estimation (Monthly)
+Essential Services
+* Cloudflare Pages: Free tier (unlimited bandwidth)
+* Airtable Pro: $20/month (advanced features)
+* Cloudflare R2: ~$5-15/month (media storage)
+* Domain Registration: ~$1.25/month per domain
+Optional Services
+* Cloudflare Pro: $20/month (advanced analytics)
+* Email Service: $10-30/month (Mailgun, SendGrid, etc.)
+* Backup Service: $5-10/month (automated backups)
+Total Estimated Monthly Cost: $26-85/month
+
+Launch Checklist
+Pre-Launch
+* Airtable base created with all tables
+* Admin credentials configured
+* All domains purchased and configured
+* SSL certificates active
+* Media files uploaded to R2
+* Content added to database
+* Forms tested and functional
+* Mobile responsiveness verified
+Launch Day
+* DNS records updated
+* Redirects tested
+* Analytics tracking active
+* Contact forms receiving submissions
+* Admin panel accessible
+* All links functional
+* Performance optimized
+Post-Launch
+* Submit to search engines
+* Monitor for issues
+* Set up regular content updates
+* Plan marketing strategy
+* Schedule regular backups
+This structure provides a solid foundation for your music website that can grow with your needs while maintaining minimal maintenance overhead.
+
+
+
+
+
+
