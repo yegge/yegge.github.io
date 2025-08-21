@@ -1,15 +1,50 @@
-# Domain redirects
-https://angershade.com/* https://yegge.com/?artist=angershade 301
-https://thecorruptive.com/* https://yegge.com/?artist=thecorruptive 301
+# --- Domain Canonicalization ---
+# Any request on angershade.com → yegge.com/angershade (preserves path/query)
+https://angershade.com/*      https://yegge.com/angershade/:splat   301
+https://www.angershade.com/*  https://yegge.com/angershade/:splat   301
+
+# Any request on thecorruptive.com → yegge.com/thecorruptive
+https://thecorruptive.com/*      https://yegge.com/thecorruptive/:splat   301
+https://www.thecorruptive.com/*  https://yegge.com/thecorruptive/:splat   301
+
+# Any request on sonancy.studio → yegge.com/sonancystudio
+https://sonancy.studio/*      https://yegge.com/sonancystudio/:splat   301
+https://www.sonancy.studio/*  https://yegge.com/sonancystudio/:splat   301
+
+
+# --- Path Shortcuts (all domains, end up on yegge.com) ---
+/isolation        https://yegge.com/discography/theisolationsessions      301
+/areteep          https://yegge.com/discography/arete-ep                  301
+/aretelp          https://yegge.com/discography/arete-remastered-lp       301
+/about            https://yegge.com/bio/bio                               301
+/bio              https://yegge.com/bio/bio                               301
+/presskit         https://yegge.com/bio/bio                               301
+/sonancy          https://yegge.com/sonancystudio                         301
+/megannestryker   https://yegge.com/sonancystudio                         301
+/sonancy-studio   https://yegge.com/sonancystudio                         301
+/yeggestryker     https://yegge.com/sonancystudio                         301
+/hex              https://yegge.com/discography/hexprognosticatormix-sp   301
+/adept            https://yegge.com/discography/arete-remastered-lp       301
+/yegge            https://yegge.com/bio/bio                               301
+/subscribe        https://yegge.com/subscribe2                            301
+/contact          https://yegge.com/inquiry                               301
+/oneplusone       https://yegge.com/1+1                                   301
+/nohorses         https://yegge.com/blog/no-horses                        301
+/newsletter       https://yegge.com/subscribe2                            301
+/lovesong         https://yegge.com/blog/lovesong                         301
+
+# Blog redirects
+/blog /blog.html 200
+/blog/ /blog.html 200
+
+# Individual blog post redirects (if needed)
+/blog/welcome-to-yegge /blog/welcome-to-yegge.html 200
+/blog/new-angershade-release-coming-soon /blog/new-angershade-release-coming-soon.html 200
 
 # Page redirects
+/admin /admin-login.html 200
 /terms /terms.html 200
 /privacy /privacy.html 200
-/about /index.html#about 200
-/music /index.html#music 200
-/blog /index.html#blog 200
-/subscribe /index.html#subscribe 200
-/contact /index.html#contact 200
 
-# Handle SPA routing
+# SPA fallback
 /* /index.html 200
