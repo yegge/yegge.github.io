@@ -1,40 +1,36 @@
-/* likeaghost.css — compact desktop, roomy mobile, dark-gray text, links same color */
+/* likeaghost.css — upper-left layout, full width, dark-gray text, minimal padding */
 
 /* Font */
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap");
 
-/* ---------- Theme Vars (dark gray text in both themes) ---------- */
+/* ---------- Theme Vars ---------- */
 :root {
-  /* DARK (default) */
   --bg: #0b0d0f;
-  --fg: #c9cdd2;        /* dark gray text on dark bg */
-  --muted: #8b9097;     /* secondary gray */
+  --fg: #c9cdd2;      /* dark gray text */
+  --muted: #8b9097;
   --hairline: #2b3036;
-  --accent: var(--fg);  /* links same color as text */
-  --accent-visited: var(--fg);
-  --focus-ring: 2px solid rgba(160, 180, 200, .35);
+  --accent: var(--fg);
+  --focus-ring: 2px solid rgba(160,180,200,.35);
 }
 
 /* Light theme */
-.theme-light{
+.theme-light {
   --bg: #f7f7f8;
-  --fg: #2a2e33;        /* dark gray text on light bg */
+  --fg: #2a2e33;      /* dark gray text */
   --muted: #5a6068;
   --hairline: #d6d8db;
-  --accent: var(--fg);  /* links same color as text */
-  --accent-visited: var(--fg);
-  --focus-ring: 2px solid rgba(30, 60, 120, .25);
+  --accent: var(--fg);
+  --focus-ring: 2px solid rgba(30,60,120,.25);
 }
 
 /* Dark theme */
-.theme-dark{
+.theme-dark {
   --bg: #0b0d0f;
   --fg: #c9cdd2;
   --muted: #8b9097;
   --hairline: #2b3036;
   --accent: var(--fg);
-  --accent-visited: var(--fg);
-  --focus-ring: 2px solid rgba(160, 180, 200, .35);
+  --focus-ring: 2px solid rgba(160,180,200,.35);
 }
 
 /* ---------- Base ---------- */
@@ -42,61 +38,58 @@
 *::before,
 *::after { box-sizing: border-box; }
 
-html, body{
+html, body {
   margin: 0;
   padding: 0;
   background: var(--bg);
   color: var(--fg);
-  font: 400 16px/1.6 "Inter", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  font: 400 16px/1.55 "Inter", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 }
 
-.page{
-  max-width: 780px;
-  margin: 0 auto;
-  padding: clamp(16px, 3vw, 32px);
+.page {
+  margin: 0;
+  padding: 16px 24px;      /* minimal top & side padding */
+  max-width: 100%;
+  width: 100%;
 }
 
-/* ---------- Type & Rhythm (mobile defaults) ---------- */
-h1, h2, h3{
-  margin: 0 0 .35em 0;
-  line-height: 1.18;
+/* ---------- Typography ---------- */
+h1, h2, h3 {
+  margin: 0 0 .25em 0;
+  line-height: 1.1;
   font-weight: 700;
   letter-spacing: .01em;
   color: var(--fg);
 }
-h1{ font-size: clamp(28px, 7vw, 44px); font-weight: 800; }
-h2{ font-size: clamp(16px, 3.6vw, 22px); text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
-h3{ font-size: clamp(15px, 3.2vw, 20px); }
+h1 { font-size: clamp(28px, 6vw, 42px); font-weight: 800; }
+h2 { font-size: clamp(16px, 3.4vw, 20px); text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+h3 { font-size: clamp(15px, 3.2vw, 18px); }
 
-.section{ margin: 28px 0 24px; }
+.section { margin: 20px 0; }
+.rule { height: 1px; width: 100%; border: 0; background: var(--hairline); margin: 16px 0; }
 
-.rule{
-  height: 2px; width: 100%; border: 0; background: var(--hairline); margin: 24px 0;
-}
+ul { list-style: none; padding: 0; margin: 8px 0; }
+li { margin: 4px 0; font-weight: 500; }
 
-ul{ list-style: none; padding: 0; margin: 10px 0 0; }
-li{ margin: 8px 0; font-weight: 500; }
+.muted { color: var(--muted); }
+.note { margin-top: 14px; font-size: .925rem; letter-spacing: .02em; }
 
-.muted{ color: var(--muted); }
-.note{ margin-top: 18px; font-size: .925rem; letter-spacing: .02em; }
-
-/* ---------- Links (same color as text; underline only on hover) ---------- */
-a{
-  color: inherit;             /* same as surrounding text */
+/* ---------- Links ---------- */
+a {
+  color: inherit;
   text-decoration: none;
 }
-a:visited{ color: inherit; }
-a:hover{ text-decoration: underline; }
-a:focus-visible{
+a:visited { color: inherit; }
+a:hover { text-decoration: underline; }
+a:focus-visible {
   outline: var(--focus-ring);
   border-radius: 4px;
 }
 
-/* ---------- Buttons (don’t inherit theme colors) ---------- */
-.button, .btn{
+/* ---------- Buttons ---------- */
+.button, .btn {
   --btn-bg: #0b0d0f;
   --btn-fg: #ffffff;
   --btn-bg-hover: #151a1f;
@@ -105,64 +98,58 @@ a:focus-visible{
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: .55rem;
-  padding: .62rem .95rem;
-  border-radius: 10px;
+  gap: .5rem;
+  padding: .5rem .8rem;
+  border-radius: 8px;
   border: 1px solid var(--btn-border);
   background: var(--btn-bg);
   color: var(--btn-fg);
   font-weight: 600;
-  line-height: 1;
   text-decoration: none;
   cursor: pointer;
   transition: transform .02s ease, background .15s ease, box-shadow .15s ease;
 }
-.button:hover, .btn:hover{ background: var(--btn-bg-hover); }
-.button:active, .btn:active{ transform: translateY(1px); }
+.button:hover, .btn:hover { background: var(--btn-bg-hover); }
+.button:active, .btn:active { transform: translateY(1px); }
 
-.btn--ghost{
+.btn--ghost {
   --btn-bg: transparent;
   --btn-fg: var(--fg);
   --btn-border: rgba(255,255,255,.25);
   background: var(--btn-bg);
   color: var(--btn-fg);
 }
-.theme-light .btn--ghost{
+.theme-light .btn--ghost {
   --btn-border: rgba(0,0,0,.25);
 }
-.btn--accent{
-  --btn-bg: var(--fg);   /* accent = same gray family but solid button */
+.btn--accent {
+  --btn-bg: var(--fg);
   --btn-fg: #fff;
   --btn-bg-hover: rgba(120,130,140,.95);
   --btn-border: transparent;
 }
-.btn:focus-visible, .button:focus-visible{
+.btn:focus-visible, .button:focus-visible {
   outline: var(--focus-ring);
   outline-offset: 2px;
 }
 
-/* ---------- Utilities ---------- */
-.upper{ text-transform: uppercase; letter-spacing: .06em; }
-.dim{ color: var(--muted); }
-.tight{ margin-top: .35rem; }
-
-.hr-thin{
-  border: 0; height: 1px; background: var(--hairline);
-  opacity: .9; margin: 14px 0 22px;
+/* ---------- Responsive ---------- */
+@media (min-width: 900px) {
+  html, body { line-height: 1.3; }
+  .page {
+    padding: 20px 40px;
+    max-width: 100%;
+  }
+  h1, h2, h3 { margin-bottom: .2em; }
+  ul { margin-top: 4px; }
+  li { margin: 2px 0; }
+  .section { margin: 18px 0; }
+  .rule { margin: 14px 0; }
 }
 
-/* ---------- Desktop: compact spacing ---------- */
-@media (min-width: 900px){
-  html, body{ line-height: 1.35; }
-  h1, h2, h3{ margin-bottom: .25em; }
-  ul{ margin-top: 6px; }
-  li{ margin: 4px 0; }            /* tighter list items */
-  .section{ margin: 22px 0 18px; }
-  .rule{ margin: 18px 0; }
-}
-
-/* ---------- Mobile: keep roomy spacing (no overrides needed) ---------- */
-@media (max-width: 420px){
-  .page{ padding: 18px; }
-  li{ margin: 10px 0; }
+@media (max-width: 600px) {
+  .page {
+    padding: 18px;
+  }
+  li { margin: 8px 0; }
 }
