@@ -1,0 +1,55 @@
+<!-- header.html -->
+<header class="header section">
+  <div class="hdr">
+    <!-- Logo (top-left) -->
+    <a href="/" class="hdr__logo">
+      <img src="/assets/logo14.png" alt="Site logo">
+    </a>
+
+    <!-- Centered primary nav -->
+    <nav class="hdr__nav" aria-label="Primary">
+      <ul class="hdr__menu">
+        <!-- MUSIC -->
+        <li class="menu__item">
+          <button class="btn btn--ghost" data-dropdown="music" aria-haspopup="true" aria-expanded="false">music</button>
+          <div class="dropdown" data-panel="music">
+            <!-- <a href="/music/angershade">Angershade</a> -->
+            <!-- <a href="/music/the-corruptive">The Corruptive</a> -->
+          </div>
+        </li>
+
+        <!-- DEV -->
+        <li class="menu__item">
+          <button class="btn btn--ghost" data-dropdown="dev" aria-haspopup="true" aria-expanded="false">dev</button>
+          <div class="dropdown" data-panel="dev">
+            <!-- <a href="/dev/projects">Projects</a> -->
+            <!-- <a href="/dev/docs">Docs</a> -->
+          </div>
+        </li>
+
+        <!-- RESUME -->
+        <li class="menu__item">
+          <button class="btn btn--ghost" data-dropdown="resume" aria-haspopup="true" aria-expanded="false">resume</button>
+          <div class="dropdown" data-panel="resume">
+            <!-- <a href="/resume">View Resume</a> -->
+            <!-- <a href="/resume/download.pdf">Download PDF</a> -->
+          </div>
+        </li>
+
+        <!-- CONTACT -->
+        <li class="menu__item">
+          <button class="btn btn--ghost" data-dropdown="contact" aria-haspopup="true" aria-expanded="false">contact</button>
+          <div class="dropdown" data-panel="contact">
+            <!-- <a href="/contact">Contact Form</a> -->
+            <!-- <a href="mailto:you@example.com">you@example.com</a> -->
+          </div>
+        </li>
+      </ul>
+    </nav>
+
+    <!-- Right-side utilities -->
+    <div class="hdr__utils">
+      <button class="btn btn--ghost" data-theme-toggle aria-label="Toggle theme" title="Toggle theme">theme</button>
+    </div>
+  </div>
+</header>

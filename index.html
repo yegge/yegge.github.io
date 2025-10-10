@@ -1,52 +1,94 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Like a Ghost — Yegge</title>
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="assets/likeaghost.css">
+  <meta charset="utf-8"><!-- required: UTF-8 encoding -->
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- required: responsive layout -->
+
+  <title><!-- Page Title | shows in browser tab and SERP --></title>
+
+  <!-- Primary Meta -->
+  <meta name="description" content=""><!-- ~155 chars: SERP snippet -->
+  <meta name="keywords" content=""><!-- optional: comma-separated keywords -->
+  <meta name="author" content=""><!-- your name / org -->
+
+  <!-- Canonical -->
+  <link rel="canonical" href=""><!-- preferred URL for this page -->
+
+  <!-- Robots -->
+  <meta name="robots" content="index,follow"><!-- index|noindex, follow|nofollow -->
+
+  <!-- Open Graph (Facebook, LinkedIn, etc.) -->
+  <meta property="og:type" content="website"><!-- website | article | profile -->
+  <meta property="og:title" content=""><!-- social title -->
+  <meta property="og:description" content=""><!-- social description -->
+  <meta property="og:url" content=""><!-- absolute URL to this page -->
+  <meta property="og:image" content=""><!-- absolute URL to preview image (1200x630 ideal) -->
+
+  <!-- Twitter Cards -->
+  <meta name="twitter:card" content="summary_large_image"><!-- summary | summary_large_image -->
+  <meta name="twitter:title" content=""><!-- twitter title -->
+  <meta name="twitter:description" content=""><!-- twitter description -->
+  <meta name="twitter:image" content=""><!-- absolute URL to preview image -->
+  <meta name="twitter:site" content=""><!-- @username -->
+
+  <!-- PWA / Icons (optional but nice) -->
+  <link rel="icon" href="/favicon.ico"><!-- 16/32px favicon -->
+  <link rel="apple-touch-icon" href=""><!-- 180x180 PNG for iOS home screen -->
+  <link rel="manifest" href=""><!-- /site.webmanifest if using PWA -->
+
+  <!-- Preconnect for fonts (optional if self-hosting Inter later) -->
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><!-- speed up font load -->
+
+  <!-- CSS: LikeAGhost universal theme -->
+  <link rel="stylesheet" href="/assets/likeaghost.css"><!-- core theme CSS -->
+
+  <!-- Theme / App Scripts -->
+  <script src="/assets/likeaghost.js" defer></script><!-- theme toggle + persistence -->
+  <script src="/assets/includes.js" defer></script><!-- auto-inject header.html & footer.html -->
+
+  <!-- Analytics (optional) -->
+  <!-- <script defer src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXX"></script> --><!-- GA4 loader -->
+  <!--
+  <script>
+    // Google Analytics 4 basic boilerplate
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-XXXXXXX'); // <-- replace with your GA4 ID
+  </script>
+  -->
+
+  <!-- Structured Data (JSON-LD) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Person",                        /* Organization | WebSite | Article | Person */
+    "name": "",                               /* your name or site name */
+    "url": "",                                /* canonical site URL */
+    "sameAs": []                              /* social profile URLs */
+  }
+  </script>
 </head>
+
+<!--
+  Sticky footer layout:
+  .site = flex column wrapper
+  header (injected) + main (content) + footer (injected)
+-->
 <body>
-  <div class="page">
-    <header class="section">
-      <h1>Like a Ghost</h1>
-      <hr class="hr-thin">
-      <button class="btn btn--ghost" data-theme-toggle aria-label="Toggle theme">Toggle Theme</button>
-    </header>
+  <div class="site" style="min-height:100dvh;display:flex;flex-direction:column;">
+    <header id="site-header" style="flex:0 0 auto;"></header><!-- header.html injected here -->
 
-    <section class="section">
-      <h2>Solo Projects</h2>
-      <ul>
-        <li><a href="#">Angershade</a></li>
-        <li><a href="#">Yegge</a></li>
-        <li><a href="#">The Corruptive</a></li>
-      </ul>
-    </section>
+    <main id="content" style="flex:1 0 auto;">
+      <div class="page">
+        <!-- Your page content goes here -->
+        <h1>Page Title</h1>
+        <hr class="hr-thin">
+        <p>This is your content area. The header and footer are loaded as external partials.</p>
+      </div>
+    </main>
 
-    <section class="section">
-      <h2>Bands (as bassist player &amp; contributor)</h2>
-      <ul>
-        <li>Primary</li>
-        <li>Deadbolt Zen</li>
-        <li>Risen</li>
-      </ul>
-    </section>
-
-    <section class="section">
-      <h2>The Influenza</h2>
-      <p class="muted">My playlists of influences</p>
-      <ul>
-        <li><a href="#">Apple Music</a></li>
-        <li><a href="#">YouTube Video</a></li>
-        <li><a href="#">YouTube Music</a></li>
-      </ul>
-    </section>
-
-    <hr class="rule">
-    <p class="note upper dim">The Early Years 1994 – 2009</p>
+    <footer id="site-footer" style="flex:0 0 auto;"></footer><!-- footer.html injected here -->
   </div>
-
-  <script src="assets/likeaghost.js" defer></script>
 </body>
 </html>
