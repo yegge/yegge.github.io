@@ -1,0 +1,152 @@
+/* likeaghost.css */
+/* Dual theme inspired by Yegge's site aesthetic */
+
+/* Font */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap");
+
+/* Default (dark mode first) */
+:root {
+  --bg: #0b0d0f;
+  --fg: #e7eaee;
+  --muted: #a6adb5;
+  --hairline: #2b3036;
+  --accent: #58a6ff;
+  --accent-visited: #c58aff;
+  --focus-ring: 2px solid rgba(88,166,255,.45);
+}
+
+/* Light Theme */
+.theme-light {
+  --bg: #f7f7f8;
+  --fg: #0b0d0f;
+  --muted: #4b4f56;
+  --hairline: #d6d8db;
+  --accent: #0f8fff;
+  --accent-visited: #7a2bdc;
+  --focus-ring: 2px solid rgba(15,143,255,.35);
+}
+
+/* Dark Theme */
+.theme-dark {
+  --bg: #0b0d0f;
+  --fg: #e7eaee;
+  --muted: #a6adb5;
+  --hairline: #2b3036;
+  --accent: #58a6ff;
+  --accent-visited: #c58aff;
+  --focus-ring: 2px solid rgba(88,166,255,.45);
+}
+
+/* Base */
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font: 400 16px/1.6 "Inter", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+.page {
+  max-width: 780px;
+  margin: 0 auto;
+  padding: clamp(16px, 3vw, 32px);
+}
+
+/* Typography */
+h1, h2, h3 {
+  margin: 0 0 .35em 0;
+  line-height: 1.15;
+  font-weight: 700;
+  letter-spacing: .01em;
+}
+h1 { font-size: clamp(28px, 7vw, 44px); font-weight: 800; }
+h2 { font-size: clamp(16px, 3.6vw, 22px); text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+h3 { font-size: clamp(15px, 3.2vw, 20px); }
+
+.section { margin: 28px 0 24px; }
+
+.rule {
+  height: 2px;
+  width: 100%;
+  border: 0;
+  background: var(--hairline);
+  margin: 24px 0;
+}
+
+/* Lists */
+ul { list-style: none; padding: 0; margin: 10px 0 0; }
+li { margin: 8px 0; font-weight: 500; }
+.muted { color: var(--muted); }
+.note { margin-top: 18px; font-size: .925rem; letter-spacing: .02em; }
+
+/* Links */
+a { color: var(--accent); text-decoration: none; }
+a:visited { color: var(--accent-visited); }
+a:hover { text-decoration: underline; }
+a:focus-visible { outline: var(--focus-ring); border-radius: 4px; }
+
+/* Buttons */
+.button, .btn {
+  --btn-bg: #0b0d0f;
+  --btn-fg: #ffffff;
+  --btn-bg-hover: #151a1f;
+  --btn-border: rgba(0,0,0,.12);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .55rem;
+  padding: .62rem .95rem;
+  border-radius: 10px;
+  border: 1px solid var(--btn-border);
+  background: var(--btn-bg);
+  color: var(--btn-fg);
+  font-weight: 600;
+  line-height: 1;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform .02s ease, background .15s ease, box-shadow .15s ease;
+}
+.button:hover, .btn:hover { background: var(--btn-bg-hover); }
+.button:active, .btn:active { transform: translateY(1px); }
+
+.btn--ghost {
+  --btn-bg: transparent;
+  --btn-fg: var(--fg);
+  --btn-border: rgba(255,255,255,.25);
+  background: var(--btn-bg);
+  color: var(--btn-fg);
+}
+.btn--accent {
+  --btn-bg: var(--accent);
+  --btn-fg: #fff;
+  --btn-bg-hover: rgba(88,166,255,.9);
+  --btn-border: transparent;
+}
+.btn:focus-visible, .button:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: 2px;
+}
+
+/* Utilities */
+.upper { text-transform: uppercase; letter-spacing: .06em; }
+.dim { color: var(--muted); }
+.tight { margin-top: .35rem; }
+
+/* Mobile */
+@media (max-width: 420px) {
+  .page { padding: 18px; }
+  li { margin: 10px 0; }
+}
+.hr-thin {
+  border: 0;
+  height: 1px;
+  background: var(--hairline);
+  opacity: .9;
+  margin: 14px 0 22px;
+}
