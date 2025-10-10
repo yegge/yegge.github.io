@@ -1,48 +1,48 @@
-/* likeaghost.css */
-/* Dual theme inspired by Yegge's site aesthetic */
+/* likeaghost.css — compact desktop, roomy mobile, dark-gray text, links same color */
 
 /* Font */
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap");
 
-/* Default (dark mode first) */
+/* ---------- Theme Vars (dark gray text in both themes) ---------- */
 :root {
+  /* DARK (default) */
   --bg: #0b0d0f;
-  --fg: #e7eaee;
-  --muted: #a6adb5;
+  --fg: #c9cdd2;        /* dark gray text on dark bg */
+  --muted: #8b9097;     /* secondary gray */
   --hairline: #2b3036;
-  --accent: #58a6ff;
-  --accent-visited: #c58aff;
-  --focus-ring: 2px solid rgba(88,166,255,.45);
+  --accent: var(--fg);  /* links same color as text */
+  --accent-visited: var(--fg);
+  --focus-ring: 2px solid rgba(160, 180, 200, .35);
 }
 
-/* Light Theme */
-.theme-light {
+/* Light theme */
+.theme-light{
   --bg: #f7f7f8;
-  --fg: #0b0d0f;
-  --muted: #4b4f56;
+  --fg: #2a2e33;        /* dark gray text on light bg */
+  --muted: #5a6068;
   --hairline: #d6d8db;
-  --accent: #0f8fff;
-  --accent-visited: #7a2bdc;
-  --focus-ring: 2px solid rgba(15,143,255,.35);
+  --accent: var(--fg);  /* links same color as text */
+  --accent-visited: var(--fg);
+  --focus-ring: 2px solid rgba(30, 60, 120, .25);
 }
 
-/* Dark Theme */
-.theme-dark {
+/* Dark theme */
+.theme-dark{
   --bg: #0b0d0f;
-  --fg: #e7eaee;
-  --muted: #a6adb5;
+  --fg: #c9cdd2;
+  --muted: #8b9097;
   --hairline: #2b3036;
-  --accent: #58a6ff;
-  --accent-visited: #c58aff;
-  --focus-ring: 2px solid rgba(88,166,255,.45);
+  --accent: var(--fg);
+  --accent-visited: var(--fg);
+  --focus-ring: 2px solid rgba(160, 180, 200, .35);
 }
 
-/* Base */
+/* ---------- Base ---------- */
 *,
 *::before,
 *::after { box-sizing: border-box; }
 
-html, body {
+html, body{
   margin: 0;
   padding: 0;
   background: var(--bg);
@@ -50,53 +50,58 @@ html, body {
   font: 400 16px/1.6 "Inter", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-.page {
+.page{
   max-width: 780px;
   margin: 0 auto;
   padding: clamp(16px, 3vw, 32px);
 }
 
-/* Typography */
-h1, h2, h3 {
+/* ---------- Type & Rhythm (mobile defaults) ---------- */
+h1, h2, h3{
   margin: 0 0 .35em 0;
-  line-height: 1.15;
+  line-height: 1.18;
   font-weight: 700;
   letter-spacing: .01em;
+  color: var(--fg);
 }
-h1 { font-size: clamp(28px, 7vw, 44px); font-weight: 800; }
-h2 { font-size: clamp(16px, 3.6vw, 22px); text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
-h3 { font-size: clamp(15px, 3.2vw, 20px); }
+h1{ font-size: clamp(28px, 7vw, 44px); font-weight: 800; }
+h2{ font-size: clamp(16px, 3.6vw, 22px); text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+h3{ font-size: clamp(15px, 3.2vw, 20px); }
 
-.section { margin: 28px 0 24px; }
+.section{ margin: 28px 0 24px; }
 
-.rule {
-  height: 2px;
-  width: 100%;
-  border: 0;
-  background: var(--hairline);
-  margin: 24px 0;
+.rule{
+  height: 2px; width: 100%; border: 0; background: var(--hairline); margin: 24px 0;
 }
 
-/* Lists */
-ul { list-style: none; padding: 0; margin: 10px 0 0; }
-li { margin: 8px 0; font-weight: 500; }
-.muted { color: var(--muted); }
-.note { margin-top: 18px; font-size: .925rem; letter-spacing: .02em; }
+ul{ list-style: none; padding: 0; margin: 10px 0 0; }
+li{ margin: 8px 0; font-weight: 500; }
 
-/* Links */
-a { color: var(--accent); text-decoration: none; }
-a:visited { color: var(--accent-visited); }
-a:hover { text-decoration: underline; }
-a:focus-visible { outline: var(--focus-ring); border-radius: 4px; }
+.muted{ color: var(--muted); }
+.note{ margin-top: 18px; font-size: .925rem; letter-spacing: .02em; }
 
-/* Buttons */
-.button, .btn {
+/* ---------- Links (same color as text; underline only on hover) ---------- */
+a{
+  color: inherit;             /* same as surrounding text */
+  text-decoration: none;
+}
+a:visited{ color: inherit; }
+a:hover{ text-decoration: underline; }
+a:focus-visible{
+  outline: var(--focus-ring);
+  border-radius: 4px;
+}
+
+/* ---------- Buttons (don’t inherit theme colors) ---------- */
+.button, .btn{
   --btn-bg: #0b0d0f;
   --btn-fg: #ffffff;
   --btn-bg-hover: #151a1f;
   --btn-border: rgba(0,0,0,.12);
+
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -112,41 +117,52 @@ a:focus-visible { outline: var(--focus-ring); border-radius: 4px; }
   cursor: pointer;
   transition: transform .02s ease, background .15s ease, box-shadow .15s ease;
 }
-.button:hover, .btn:hover { background: var(--btn-bg-hover); }
-.button:active, .btn:active { transform: translateY(1px); }
+.button:hover, .btn:hover{ background: var(--btn-bg-hover); }
+.button:active, .btn:active{ transform: translateY(1px); }
 
-.btn--ghost {
+.btn--ghost{
   --btn-bg: transparent;
   --btn-fg: var(--fg);
   --btn-border: rgba(255,255,255,.25);
   background: var(--btn-bg);
   color: var(--btn-fg);
 }
-.btn--accent {
-  --btn-bg: var(--accent);
+.theme-light .btn--ghost{
+  --btn-border: rgba(0,0,0,.25);
+}
+.btn--accent{
+  --btn-bg: var(--fg);   /* accent = same gray family but solid button */
   --btn-fg: #fff;
-  --btn-bg-hover: rgba(88,166,255,.9);
+  --btn-bg-hover: rgba(120,130,140,.95);
   --btn-border: transparent;
 }
-.btn:focus-visible, .button:focus-visible {
+.btn:focus-visible, .button:focus-visible{
   outline: var(--focus-ring);
   outline-offset: 2px;
 }
 
-/* Utilities */
-.upper { text-transform: uppercase; letter-spacing: .06em; }
-.dim { color: var(--muted); }
-.tight { margin-top: .35rem; }
+/* ---------- Utilities ---------- */
+.upper{ text-transform: uppercase; letter-spacing: .06em; }
+.dim{ color: var(--muted); }
+.tight{ margin-top: .35rem; }
 
-/* Mobile */
-@media (max-width: 420px) {
-  .page { padding: 18px; }
-  li { margin: 10px 0; }
+.hr-thin{
+  border: 0; height: 1px; background: var(--hairline);
+  opacity: .9; margin: 14px 0 22px;
 }
-.hr-thin {
-  border: 0;
-  height: 1px;
-  background: var(--hairline);
-  opacity: .9;
-  margin: 14px 0 22px;
+
+/* ---------- Desktop: compact spacing ---------- */
+@media (min-width: 900px){
+  html, body{ line-height: 1.35; }
+  h1, h2, h3{ margin-bottom: .25em; }
+  ul{ margin-top: 6px; }
+  li{ margin: 4px 0; }            /* tighter list items */
+  .section{ margin: 22px 0 18px; }
+  .rule{ margin: 18px 0; }
+}
+
+/* ---------- Mobile: keep roomy spacing (no overrides needed) ---------- */
+@media (max-width: 420px){
+  .page{ padding: 18px; }
+  li{ margin: 10px 0; }
 }
