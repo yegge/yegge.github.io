@@ -1,0 +1,66 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><title>STAGES OF MUSIC & AUDIO PRODUCTION</title>
+            <style>
+                body { background:#000; color:#b0b0b0; font-family:sans-serif; padding:50px; max-width:800px; margin:0 auto; line-height:1.6; user-select: none; -webkit-user-select: none; }
+                h1,h2 { color:#fff; border-bottom:1px solid #333; padding-bottom:10px; }
+                a { color:#ff9800; pointer-events: auto; }
+                pre { background:#111; padding:35px 15px 15px 15px; border:1px solid #333; color:#ffb74d; position: relative; border-radius: 6px; }
+                pre code { user-select: text; -webkit-user-select: text; }
+                .copy-btn { position: absolute; top: 8px; left: 8px; background: #333; color: #fff; border: 1px solid #555; padding: 4px 8px; font-size: 11px; cursor: pointer; border-radius: 4px; font-weight: bold; text-transform: uppercase; }
+                .copy-btn:hover { background: #ff9800; color: #000; border-color: #ff9800; }
+                .back-link { display:inline-block; margin-bottom:20px; text-decoration:none; color:#ff9800; font-weight:bold; }
+                .back-link:hover { text-decoration:underline; }
+            </style>
+            <script>
+                // Document Lockdown
+                document.addEventListener('contextmenu', event => event.preventDefault());
+                document.onkeydown = function(e) {
+                    if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey && e.keyCode == 73) || (e.ctrlKey && e.keyCode == 85) || (e.metaKey && e.altKey && e.keyCode == 73) || (e.metaKey && e.keyCode == 85)) {
+                        return false;
+                    }
+                };
+
+                // Copy Buttons for Code Blocks
+                document.addEventListener("DOMContentLoaded", () => {
+                    document.querySelectorAll('pre').forEach(pre => {
+                        const btn = document.createElement('button');
+                        btn.className = 'copy-btn';
+                        btn.innerText = 'Copy';
+                        btn.onclick = () => {
+                            const code = pre.querySelector('code');
+                            const text = code ? code.innerText : pre.innerText;
+                            navigator.clipboard.writeText(text);
+                            btn.innerText = 'Copied!';
+                            setTimeout(() => btn.innerText = 'Copy', 2000);
+                        };
+                        pre.appendChild(btn);
+                    });
+                });
+            </script>
+            </head><body>
+            <a href="index.html" class="back-link">← Back to Docs</a>
+            <h1>STAGES OF MUSIC &amp; AUDIO PRODUCTION</h1>
+<p>Originally Created: December 3, 2020</p>
+<p>Audio production—from initial idea to final release—involves a complex blend of creative and technical stages. In this article, I share my approach to music production, which guided me through creating my EP &quot;[<a href="https://www.notion.so/Arete-292fb726fab38049970cc30a164b36f8?pvs=21">Arete</a>][1].&quot; By breaking the process into distinct stages, I could track progress, make strategic decisions about whether to continue, and manage the production effectively.</p>
+<h2><strong>I. CONCEPTION</strong></h2>
+<p>The conception stage brings the musical journey to life. An idea is born from spontaneous creativity—experimenting with different instruments or styles. This stage moves quickly and fluidly, often ending as soon as an idea shows enough promise to justify further investment of time and resources.</p>
+<h2><strong>II. DEMO</strong></h2>
+<p>The demo stage comes next and is often the longest part of the process. Here, you explore and experiment with the track&#39;s structure and sound using various amps, synths, and tones. Many projects get shelved at this critical juncture, making it a decisive make-or-break point. Those that push through emerge with a solid foundation track—the reward for completing this demanding stage.</p>
+<h2><strong>III. SESSION PREPARATION</strong></h2>
+<p>Session preparation is a meticulous process involving several sub-checklists. At this stage, the foundation track is exported from the demo project and imported into a new one, complete with key signatures, tempo settings, and beat mapping. Recording settings are adjusted to ensure optimal quality, with stereo recordings set at a 48kHz sample rate and 24bit. Busses are created and assigned, and instruments to be used are prepared.</p>
+<h2><strong>IV. SESSION</strong></h2>
+<p>The session stage is where performance and dynamics shine. Each instrument requires nine to seventeen takes per alternate, providing diverse options for the final mix. This stage is often the most enjoyable, allowing musicians to immerse themselves in their craft. While individual track durations vary, a full-length EP typically takes about 2.5 months to complete.</p>
+<p>DAW SETTINGS</p>
+<ul>
+<li>32bit 88.2kHz Sampling rate</li>
+</ul>
+<h2><strong>V. MIXING</strong></h2>
+<p>The mixing stage focuses on achieving balance and editing the track. After resetting the board and adjusting the faders, a stereo mix is created and then converted into a Dolby Atmos 7.2 surround in a new project alternative.</p>
+<h2><strong>VI. MASTERING</strong></h2>
+<p>The mastering stage adjusts the track&#39;s volume to prevent distortion and achieve optimal loudness. This stage also includes designing the cover art concept. The final result is loaded into a new Logic Audio project file using a mastering template with Izotope&#39;s Ozone Mastering. Take your time—this process shouldn&#39;t be rushed, and regular breaks are essential to rest your ears.</p>
+<h2><strong>VII. DISTRIBUTION</strong></h2>
+<p>Distribution involves uploading the music to a platform like Distrokid and setting a release date about six weeks out. Complete all metadata and accreditation at this stage to ensure a smooth release.</p>
+<h2><strong>VIII. RELEASE</strong></h2>
+<p>After release, marketing projects commence. By this point, the production process is finalized and complete.</p>
+<p>© 2026 <a href="https://yegge.com">Yegge</a> | <a href="https://www.notion.so/ANGERSHADE-angershade-com-299fb726fab3804d8eb4c65eac7acb81?pvs=21">Angershade</a> | <a href="https://thecorruptive.com">The Corruptive</a> 
+<a href="https://thecorruptive.com/terms">Terms</a> | <a href="https://thecorruptive.com/privacy">Privacy Policy</a> | <a href="https://thecorruptive.com/inquiry">Inquiry</a> | <a href="https://distrokid.com/">DistroKid – official distributor</a></p>
+</body></html>
