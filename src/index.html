@@ -215,6 +215,12 @@
                 font-size: 13px;
             }
         }
+
+        /* Safari specific fixes */
+        @media (hover: none) {
+            .tool-btn:hover { background: #222; color: var(--brand-orange); }
+            .file-item:hover { background: transparent; color: #aaa; }
+        }
     </style>
 </head>
 <body>
@@ -223,6 +229,8 @@
         <p style="color:#aaa; margin-bottom:20px; font-size:16px;">Click anywhere to restore access to your project files.</p>
         <button class="save-btn" style="pointer-events: none;">Unlock Workspace</button>
     </div>
+
+    <input type="file" id="directory-input" webkitdirectory style="display:none;">
 
     <div id="top-bar">
     <button id="sidebar-toggle" class="tool-btn" aria-label="Toggle Sidebar">☰</button>
@@ -301,6 +309,8 @@
         
         let projectHandle; 
         let activeFileHandle;
+        let isSafariFallback = false;
+        let safariFiles = []; // For Safari fallback mode
 
         // IndexedDB Persistence
         const dbName = 'CRMBaseEditor';
@@ -468,8 +478,31 @@
         async function syncFolder() {
             try {
                 if (!window.showDirectoryPicker) {
-                    throw new Error("Your browser or current setup doesn't support the File System Access API. Try using Chrome or running this on a local server (e.g., npx http-server).");
+                    // Fallback for Safari/Firefox
+                    console.log("showDirectoryPicker not supported, using fallback.");
+                    const dirInput = document.getElementById('directory-input');
+                    dirInput.onchange = async (e) => {
+                        const files = Array.from(e.target.files);
+                        if (files.length === 0) return;
+                        
+                        // Try to find the root folder name from the path
+                        const firstPath = files[0].webkitRelativePath;
+                        const rootName = firstPath.split('/')[0];
+                        
+                        if (rootName.toLowerCase() === 'src' || rootName.toLowerCase() === 'docs') {
+                            alert(`⚠️ You selected the '/${rootName}' folder.\n\nPlease select the ROOT project folder (e.g. 'yegge.github.io') instead.`);
+                            return;
+                        }
+                        
+                        isSafariFallback = true;
+                        safariFiles = files;
+                        projectHandle = { name: rootName }; // Dummy handle
+                        refreshFileList();
+                    };
+                    dirInput.click();
+                    return;
                 }
+
                 projectHandle = await window.showDirectoryPicker();
                 
                 // Prevent selecting the wrong folder
@@ -480,6 +513,7 @@
                     return;
                 }
                 
+                isSafariFallback = false;
                 await saveHandle(projectHandle);
                 refreshFileList();
             } catch (err) { 
@@ -490,8 +524,27 @@
 
         async function refreshFileList() {
             fileListElem.innerHTML = '';
-            let srcFolder;
             
+            if (isSafariFallback) {
+                // Safari fallback using the files array
+                const mdFiles = safariFiles.filter(f => f.name.endsWith('.md') && f.webkitRelativePath.includes('/src/'));
+                mdFiles.sort((a, b) => a.webkitRelativePath.localeCompare(b.webkitRelativePath));
+                
+                mdFiles.forEach(file => {
+                    const div = document.createElement('div');
+                    div.className = 'file-item';
+                    // Remove the root folder name from the display path
+                    const pathParts = file.webkitRelativePath.split('/');
+                    pathParts.shift(); // remove root
+                    if (pathParts[0] === 'src') pathParts.shift(); // remove src
+                    div.textContent = pathParts.join('/');
+                    div.onclick = () => loadFile(file);
+                    fileListElem.appendChild(div);
+                });
+                return;
+            }
+
+            let srcFolder;
             try {
                 srcFolder = await projectHandle.getDirectoryHandle('src');
             } catch {
@@ -515,24 +568,71 @@
             await scanDir(srcFolder);
         }
 
-        async function loadFile(handle) {
-            activeFileHandle = handle;
-            const file = await handle.getFile();
-            editor.value = await file.text();
-            currentFileLabel.textContent = `Active: ${handle.name}`;
+        async function loadFile(handleOrFile) {
+            activeFileHandle = handleOrFile;
+            let text = "";
+            let name = "";
+
+            if (isSafariFallback) {
+                text = await handleOrFile.text();
+                name = handleOrFile.name;
+            } else {
+                const file = await handleOrFile.getFile();
+                text = await file.text();
+                name = handleOrFile.name;
+            }
+
+            editor.value = text;
+            currentFileLabel.textContent = `Active: ${name}`;
             
             document.querySelectorAll('.file-item').forEach(i => i.classList.remove('active'));
-            event.target.classList.add('active');
+            if (event && event.target) event.target.classList.add('active');
         }
 
         async function saveAll() {
             if (!projectHandle || !editor.value.trim()) return alert("Sync a folder and enter content first.");
 
             const content = editor.value;
-            const filename = activeFileHandle ? activeFileHandle.name.replace('.md', '') : content.split('\n')[0].replace(/[#*`]/g, '').trim() || "document";
+            let filename = "";
+            
+            if (isSafariFallback) {
+                filename = activeFileHandle ? activeFileHandle.name.replace('.md', '') : content.split('\n')[0].replace(/[#*`]/g, '').trim() || "document";
+            } else {
+                filename = activeFileHandle ? activeFileHandle.name.replace('.md', '') : content.split('\n')[0].replace(/[#*`]/g, '').trim() || "document";
+            }
+            
             const catInput = document.getElementById('category-input').value.trim();
             const subCatInput = document.getElementById('subcategory-input').value.trim();
             
+            if (isSafariFallback) {
+                // Safari Save logic: Use showSaveFilePicker or Download fallback
+                try {
+                    if (window.showSaveFilePicker) {
+                        const handle = await window.showSaveFilePicker({
+                            suggestedName: `${filename}.md`,
+                            types: [{ description: 'Markdown File', accept: { 'text/markdown': ['.md'] } }]
+                        });
+                        const writable = await handle.createWritable();
+                        await writable.write(content);
+                        await writable.close();
+                        alert("Markdown saved! (Note: HTML update and Src sync not fully automated in Safari due to security restrictions)");
+                    } else {
+                        // Blob Download Fallback
+                        const blob = new Blob([content], { type: 'text/markdown' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `${filename}.md`;
+                        a.click();
+                        URL.revokeObjectURL(url);
+                        alert("Downloading Markdown file. (Safari directory writing is restricted)");
+                    }
+                } catch (err) {
+                    console.error(err);
+                }
+                return;
+            }
+
             try {
                 // Determine directories and depths
                 let targetSrcDir = await projectHandle.getDirectoryHandle('src', { create: true });

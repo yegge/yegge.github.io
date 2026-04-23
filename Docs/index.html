@@ -102,10 +102,12 @@
             border-bottom: none;
         }
 
-        .list-item:hover {
-            background: var(--hover-bg);
-            padding-left: 24px; /* subtle slide effect */
-            border-left: 3px solid var(--brand-orange);
+        @media (hover: hover) {
+            .list-item:hover {
+                background: var(--hover-bg);
+                padding-left: 24px; /* subtle slide effect */
+                border-left: 3px solid var(--brand-orange);
+            }
         }
 
         .file-name {

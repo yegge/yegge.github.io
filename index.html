@@ -66,11 +66,13 @@
             align-items: center;
         }
 
-        .card:hover {
-            background: var(--hover-bg);
-            transform: translateY(-4px);
-            border-color: var(--brand-orange);
-            box-shadow: 0 8px 24px rgba(255, 152, 0, 0.1);
+        @media (hover: hover) {
+            .card:hover {
+                background: var(--hover-bg);
+                transform: translateY(-4px);
+                border-color: var(--brand-orange);
+                box-shadow: 0 8px 24px rgba(255, 152, 0, 0.1);
+            }
         }
 
         .card-icon {
