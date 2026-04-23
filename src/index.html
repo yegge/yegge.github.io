@@ -22,29 +22,39 @@
             background-color: var(--bg-dark);
             color: var(--text-main);
             font-family: 'Inter', sans-serif;
-            display: flex; flex-direction: column; overflow: hidden;
+            display: -webkit-flex; display: flex;
+            -webkit-flex-direction: column; flex-direction: column;
+            overflow: hidden;
         }
 
         /* Top Navigation */
         #top-bar {
             background: var(--bg-panel);
+            display: -webkit-flex;
             display: flex;
+            -webkit-flex-direction: column;
             flex-direction: column;
             border-bottom: 1px solid var(--border-color);
             padding: 5px 10px;
         }
 
         #top-bar-row2 {
+            display: -webkit-flex;
             display: flex;
+            -webkit-justify-content: space-between;
             justify-content: space-between;
+            -webkit-align-items: center;
             align-items: center;
-            gap: 6px;
+            -webkit-column-gap: 6px;
+            column-gap: 6px;
             padding-bottom: 4px;
         }
 
         #toolbar {
+            display: -webkit-flex;
             display: flex;
-            gap: 4px;
+            -webkit-column-gap: 4px;
+            column-gap: 4px;
             padding: 6px 0;
             overflow-x: auto;
             overflow-y: hidden;
@@ -77,12 +87,12 @@
         .tool-input:focus { border-color: var(--brand-orange); }
 
         /* Main Workspace Layout */
-        #workspace { display: flex; flex-grow: 1; overflow: hidden; position: relative; }
+        #workspace { display: -webkit-flex; display: flex; -webkit-flex-grow: 1; flex-grow: 1; overflow: hidden; position: relative; }
 
-        #editor-container { flex-grow: 1; display: flex; flex-direction: column; min-width: 0; }
+        #editor-container { -webkit-flex-grow: 1; flex-grow: 1; display: -webkit-flex; display: flex; -webkit-flex-direction: column; flex-direction: column; min-width: 0; }
 
         textarea {
-            flex-grow: 1; width: 100%; background: transparent; color: #eee;
+            -webkit-flex-grow: 1; flex-grow: 1; width: 100%; background: transparent; color: #eee;
             border: none; padding: 24px; font-family: Menlo, Monaco, 'Courier New', monospace;
             font-size: 12px; outline: none; resize: none; line-height: 1.5;
             box-sizing: border-box;
@@ -93,7 +103,11 @@
             width: var(--sidebar-width);
             background: var(--bg-panel);
             border-left: 1px solid var(--border-color);
-            display: flex; flex-direction: column;
+            display: -webkit-flex;
+            display: flex;
+            -webkit-flex-direction: column;
+            flex-direction: column;
+            -webkit-transition: -webkit-transform 0.25s ease;
             transition: transform 0.25s ease;
         }
 
@@ -101,7 +115,9 @@
             padding: 12px 15px; font-size: 12px; font-weight: bold;
             border-bottom: 1px solid var(--border-color);
             color: var(--brand-orange); text-transform: uppercase;
-            display: flex; align-items: center; justify-content: space-between;
+            display: -webkit-flex; display: flex;
+            -webkit-align-items: center; align-items: center;
+            -webkit-justify-content: space-between; justify-content: space-between;
         }
 
         #sidebar-close {
@@ -126,8 +142,16 @@
         #status-bar {
             background: var(--bg-panel); padding: 8px 14px;
             border-top: 1px solid var(--border-color);
-            display: flex; justify-content: space-between; align-items: center;
-            gap: 8px; flex-wrap: wrap;
+            display: -webkit-flex;
+            display: flex;
+            -webkit-justify-content: space-between;
+            justify-content: space-between;
+            -webkit-align-items: center;
+            align-items: center;
+            -webkit-column-gap: 8px;
+            column-gap: 8px;
+            -webkit-flex-wrap: wrap;
+            flex-wrap: wrap;
         }
 
         #current-file {
@@ -154,7 +178,7 @@
         /* Mobile overlay behind sidebar */
         #sidebar-backdrop {
             display: none;
-            position: fixed; inset: 0;
+            position: fixed; top: 0; right: 0; bottom: 0; left: 0;
             background: rgba(0,0,0,0.6);
             z-index: 10;
         }
@@ -168,11 +192,13 @@
                 z-index: 20;
                 width: 80vw;
                 max-width: 300px;
+                -webkit-transform: translateX(100%);
                 transform: translateX(100%);
                 border-left: 1px solid var(--border-color);
             }
 
             #sidebar.open {
+                -webkit-transform: translateX(0);
                 transform: translateX(0);
             }
 
@@ -181,7 +207,9 @@
             }
 
             #sidebar-toggle {
+                display: -webkit-inline-flex;
                 display: inline-flex;
+                -webkit-align-items: center;
                 align-items: center;
             }
 
@@ -251,7 +279,7 @@
             <input type="text" id="category-input" class="tool-input" placeholder="Category">
             <input type="text" id="subcategory-input" class="tool-input" placeholder="Subcategory">
         </div>
-        <div style="display: flex; gap: 10px; align-items: center;">
+        <div style="display: -webkit-flex; display: flex; -webkit-column-gap: 10px; column-gap: 10px; -webkit-align-items: center; align-items: center;">
             <select id="template-select" class="tool-input" style="width: 140px; border-color: var(--brand-orange);" onchange="applyTemplate()">
                 <option value="">Load Template...</option>
             </select>
@@ -468,7 +496,11 @@
         async function syncFolder() {
             try {
                 if (!window.showDirectoryPicker) {
-                    throw new Error("Your browser or current setup doesn't support the File System Access API. Try using Chrome or running this on a local server (e.g., npx http-server).");
+                    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+                    const msg = isSafari
+                        ? "Safari does not support the File System Access API.\n\nPlease use Chrome or Edge to access local project files. Templates and the editor still work — only folder sync and save require a supported browser."
+                        : "Your browser doesn't support the File System Access API. Try Chrome or Edge.";
+                    throw new Error(msg);
                 }
                 projectHandle = await window.showDirectoryPicker();
                 
@@ -504,7 +536,7 @@
                         const div = document.createElement('div');
                         div.className = 'file-item';
                         div.textContent = pathPrefix + entry.name;
-                        div.onclick = () => loadFile(entry);
+                        div.onclick = () => loadFile(entry, div);
                         fileListElem.appendChild(div);
                     } else if (entry.kind === 'directory') {
                         await scanDir(entry, pathPrefix + entry.name + "/");
@@ -515,14 +547,14 @@
             await scanDir(srcFolder);
         }
 
-        async function loadFile(handle) {
+        async function loadFile(handle, listItem) {
             activeFileHandle = handle;
             const file = await handle.getFile();
             editor.value = await file.text();
             currentFileLabel.textContent = `Active: ${handle.name}`;
-            
+
             document.querySelectorAll('.file-item').forEach(i => i.classList.remove('active'));
-            event.target.classList.add('active');
+            if (listItem) listItem.classList.add('active');
         }
 
         async function saveAll() {
@@ -680,6 +712,18 @@
                     }
                 };
 
+                function fallbackCopy(text) {
+                    var ta = document.createElement('textarea');
+                    ta.value = text;
+                    ta.style.position = 'fixed';
+                    ta.style.top = '-9999px';
+                    document.body.appendChild(ta);
+                    ta.focus();
+                    ta.select();
+                    try { document.execCommand('copy'); } catch(e) {}
+                    document.body.removeChild(ta);
+                }
+
                 // Copy Buttons for Code Blocks
                 document.addEventListener("DOMContentLoaded", () => {
                     document.querySelectorAll('pre').forEach(pre => {
@@ -689,7 +733,11 @@
                         btn.onclick = () => {
                             const code = pre.querySelector('code');
                             const text = code ? code.innerText : pre.innerText;
-                            navigator.clipboard.writeText(text);
+                            if (navigator.clipboard && navigator.clipboard.writeText) {
+                                navigator.clipboard.writeText(text).catch(() => fallbackCopy(text));
+                            } else {
+                                fallbackCopy(text);
+                            }
                             btn.innerText = 'Copied!';
                             setTimeout(() => btn.innerText = 'Copy', 2000);
                         };
