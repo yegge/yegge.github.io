@@ -223,7 +223,7 @@
             } else {
                 overlay.style.display = 'flex';
                 overlay.querySelector('h2').innerText = 'Select Project Folder';
-                overlay.querySelector('p').innerText = 'Click anywhere to select your crmbase.net root folder and begin.';
+                overlay.querySelector('p').innerText = 'Click anywhere to select your yegge.github.io root folder and begin.';
                 overlay.querySelector('button').innerText = 'Select Folder';
                 overlay.onclick = async () => {
                     await syncFolder();
@@ -336,7 +336,7 @@
                 // Prevent selecting the wrong folder
                 const folderName = projectHandle.name.toLowerCase();
                 if (folderName === 'src' || folderName === 'docs') {
-                    alert(`⚠️ You selected the '/${projectHandle.name}' folder.\n\nPlease select the ROOT project folder (e.g. 'crmbase.net') instead. The app needs access to the entire project to save to both /src and /Docs.`);
+                    alert(`⚠️ You selected the '/${projectHandle.name}' folder.\n\nPlease select the ROOT project folder (e.g. 'yegge.github.io') instead. The app needs access to the entire project to save to both /src and /Docs.`);
                     projectHandle = null;
                     return;
                 }
