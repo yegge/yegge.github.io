@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STEMREFINEAI | Workspace</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <style>
+        :root {
+            --brand-orange: #ff9800;
+            --bg-dark: #000000;
+            --bg-panel: #111111;
+            --border-color: #333333;
+            --text-main: #eeeeee;
+            --sidebar-width: 240px;
+        }
+
+        body, html {
+            margin: 0; padding: 0; height: 100%;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+
+        /* Top Navigation */
+        #top-bar {
+            background: var(--bg-panel);
+            display: flex; border-bottom: 1px solid var(--border-color);
+            padding: 5px 15px; align-items: center; justify-content: space-between;
+        }
+
+        #toolbar { display: flex; gap: 4px; flex-wrap: wrap; padding: 10px 0; }
+
+        .tool-btn {
+            background: #222; color: var(--brand-orange); border: 1px solid #444;
+            padding: 5px 10px; font-size: 11px; cursor: pointer; border-radius: 4px;
+        }
+
+        .tool-btn:hover { background: #333; color: #fff; }
+
+        .tool-input {
+            background: #222; color: #eee; border: 1px solid #444;
+            padding: 5px 10px; font-size: 11px; border-radius: 4px;
+            width: 130px; outline: none;
+        }
+        .tool-input:focus { border-color: var(--brand-orange); }
+
+        /* Main Workspace Layout */
+        #workspace { display: flex; flex-grow: 1; overflow: hidden; }
+
+        #editor-container { flex-grow: 1; display: flex; flex-direction: column; }
+
+        textarea {
+            flex-grow: 1; width: 100%; background: transparent; color: #eee;
+            border: none; padding: 40px; font-family: 'Fira Code', monospace;
+            font-size: 14px; outline: none; resize: none; line-height: 1.6;
+        }
+
+        /* Sidebar */
+        #sidebar {
+            width: var(--sidebar-width);
+            background: var(--bg-panel);
+            border-left: 1px solid var(--border-color);
+            display: flex; flex-direction: column;
+        }
+
+        .sidebar-header {
+            padding: 15px; font-size: 12px; font-weight: bold;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--brand-orange); text-transform: uppercase;
+        }
+
+        #file-list { flex-grow: 1; overflow-y: auto; padding: 10px; }
+
+        .file-item {
+            padding: 8px 12px; font-size: 13px; cursor: pointer;
+            border-radius: 4px; margin-bottom: 4px; color: #aaa;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+
+        .file-item:hover { background: #222; color: #fff; }
+        .file-item.active { background: #ff980033; color: var(--brand-orange); border-left: 3px solid var(--brand-orange); }
+
+        /* Status Bar */
+        #status-bar {
+            background: var(--bg-panel); padding: 8px 20px;
+            border-top: 1px solid var(--border-color);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+
+        .save-btn {
+            background: var(--brand-orange); color: black; border: none;
+            padding: 8px 20px; font-weight: 900; cursor: pointer; border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div id="unlock-overlay" style="display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.85); z-index: 1000; align-items:center; justify-content:center; flex-direction: column; cursor: pointer;">
+        <h2 style="color:var(--brand-orange); margin-bottom:10px; font-size:32px;">Workspace Locked</h2>
+        <p style="color:#aaa; margin-bottom:20px; font-size:16px;">Click anywhere to restore access to your project files.</p>
+        <button class="save-btn" style="pointer-events: none;">Unlock Workspace</button>
+    </div>
+
+    <div id="top-bar">
+        <div id="toolbar">
+            <button class="tool-btn" onclick="document.execCommand('undo')">↶ Undo</button>
+            <button class="tool-btn" onclick="document.execCommand('redo')">↷ Redo</button>
+            <span style="border-left: 1px solid #444; margin: 0 10px;"></span>
+            <button class="tool-btn" onclick="insertMD('# ')">H1</button>
+            <button class="tool-btn" onclick="insertMD('## ')">H2</button>
+            <button class="tool-btn" onclick="insertMD('**', '**')">B</button>
+            <button class="tool-btn" onclick="insertMD('*', '*')">I</button>
+            <button class="tool-btn" onclick="insertMD('```\n', '\n```')">Code</button>
+            <button class="tool-btn" onclick="insertMD('- ')">List</button>
+            <button class="tool-btn" onclick="insertEmbed()">Embed</button>
+            <span style="border-left: 1px solid #444; margin: 0 10px;"></span>
+            <button class="tool-btn" onclick="insertMD('<input type=\'text\' placeholder=\'Enter text...\'>')">Input</button>
+            <button class="tool-btn" onclick="insertMD('<input type=\'checkbox\'>')">Check</button>
+            <button class="tool-btn" onclick="insertMD('<input type=\'radio\'>')">Radio</button>
+            <button class="tool-btn" onclick="insertMD('<select>\\n  <option>Option 1</option>\\n</select>')">Select</button>
+            <button class="tool-btn" onclick="insertMD('<button>Click Me</button>')">Button</button>
+            <button class="tool-btn" onclick="insertMD('<input type=\'date\'>')">Date</button>
+            <span style="border-left: 1px solid #444; margin: 0 10px;"></span>
+            <input type="text" id="template-name-input" class="tool-input" placeholder="Template Name" style="width: 100px;">
+            <button class="tool-btn" onclick="saveTemplate()">Save Tpl</button>
+            <span style="border-left: 1px solid #444; margin: 0 10px;"></span>
+            <input type="text" id="category-input" class="tool-input" placeholder="Category">
+            <input type="text" id="subcategory-input" class="tool-input" placeholder="Subcategory">
+        </div>
+        <div style="display: flex; gap: 10px; align-items: center;">
+            <select id="template-select" class="tool-input" style="width: 140px; border-color: var(--brand-orange);" onchange="applyTemplate()">
+                <option value="">Load Template...</option>
+            </select>
+            <a href="../index.html" class="tool-btn" style="text-decoration:none; display:flex; align-items:center;">🏠 Dashboard</a>
+            <a href="../Docs/index.html" class="tool-btn" style="text-decoration:none; display:flex; align-items:center; color: var(--brand-orange);">📄 View /Docs</a>
+        </div>
+    </div>
+
+    <div id="workspace">
+        <div id="editor-container">
+            <textarea id="input-text" spellcheck="false" placeholder="Select a file or start typing..."></textarea>
+        </div>
+
+        <div id="sidebar">
+            <div class="sidebar-header">Source Files (/src)</div>
+            <div id="file-list"></div>
+        </div>
+    </div>
+
+    <div id="status-bar">
+        <span id="current-file" style="font-size:12px; color:#666;">No file active</span>
+        <button class="save-btn" onclick="saveAll()">Commit & Push Changes</button>
+    </div>
+
+    <script>
+        const editor = document.getElementById('input-text');
+        const fileListElem = document.getElementById('file-list');
+        const currentFileLabel = document.getElementById('current-file');
+        
+        let projectHandle; 
+        let activeFileHandle;
+
+        // IndexedDB Persistence
+        const dbName = 'CRMBaseEditor';
+        const storeName = 'handles';
+
+        function initDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(dbName, 1);
+                request.onupgradeneeded = e => e.target.result.createObjectStore(storeName);
+                request.onsuccess = e => resolve(e.target.result);
+                request.onerror = e => reject(e.target.error);
+            });
+        }
+
+        async function saveHandle(handle) {
+            const db = await initDB();
+            const tx = db.transaction(storeName, 'readwrite');
+            tx.objectStore(storeName).put(handle, 'projectHandle');
+            return new Promise(resolve => tx.oncomplete = resolve);
+        }
+
+        async function getHandle() {
+            const db = await initDB();
+            const tx = db.transaction(storeName, 'readonly');
+            const request = tx.objectStore(storeName).get('projectHandle');
+            return new Promise(resolve => {
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => resolve(null);
+            });
+        }
+
+        async function verifyPermission(fileHandle, readWrite) {
+            const options = {};
+            if (readWrite) {
+                options.mode = 'readwrite';
+            }
+            if ((await fileHandle.queryPermission(options)) === 'granted') {
+                return true;
+            }
+            if ((await fileHandle.requestPermission(options)) === 'granted') {
+                return true;
+            }
+            return false;
+        }
+
+        window.addEventListener('DOMContentLoaded', async () => {
+            const savedHandle = await getHandle();
+            const overlay = document.getElementById('unlock-overlay');
+            if (savedHandle) {
+                overlay.style.display = 'flex';
+                overlay.onclick = async () => {
+                    const hasPerm = await verifyPermission(savedHandle, true);
+                    if (hasPerm) {
+                        projectHandle = savedHandle;
+                        refreshFileList();
+                        overlay.style.display = 'none';
+                    }
+                };
+            } else {
+                overlay.style.display = 'flex';
+                overlay.querySelector('h2').innerText = 'Select Project Folder';
+                overlay.querySelector('p').innerText = 'Click anywhere to select your crmbase.net root folder and begin.';
+                overlay.querySelector('button').innerText = 'Select Folder';
+                overlay.onclick = async () => {
+                    await syncFolder();
+                    if (projectHandle) {
+                        overlay.style.display = 'none';
+                    }
+                };
+            }
+            loadTemplates();
+        });
+
+        // Toolbar Logic
+        function insertMD(before, after = "") {
+            editor.focus();
+            const start = editor.selectionStart;
+            const end = editor.selectionEnd;
+            const text = editor.value;
+            editor.setRangeText(before + text.substring(start, end) + after, start, end, 'select');
+        }
+
+        function insertEmbed() {
+            const url = prompt("Enter media URL (YouTube, MP4, MP3) or iframe code:");
+            if (!url) return;
+            
+            let embedCode = url;
+            if (url.includes("<iframe") || url.includes("<audio") || url.includes("<video")) {
+                embedCode = url;
+            } else if (url.includes("youtube.com/watch?v=") || url.includes("youtu.be/")) {
+                let videoId = "";
+                if (url.includes("watch?v=")) {
+                    videoId = url.split("watch?v=")[1].split("&")[0];
+                } else if (url.includes("youtu.be/")) {
+                    videoId = url.split("youtu.be/")[1].split("?")[0];
+                }
+                if (videoId) {
+                    embedCode = `<iframe width="560" height="315" src="https://www.youtube.com/embed/${videoId}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+                }
+            } else if (url.endsWith(".mp4") || url.endsWith(".webm") || url.endsWith(".ogg")) {
+                embedCode = `<video controls width="100%"><source src="${url}"></video>`;
+            } else if (url.endsWith(".mp3") || url.endsWith(".wav") || url.endsWith(".m4a")) {
+                embedCode = `<audio controls style="width:100%;"><source src="${url}"></audio>`;
+            } else {
+                embedCode = `<iframe src="${url}" width="100%" height="400" frameborder="0"></iframe>`;
+            }
+            insertMD(embedCode + '\n\n');
+        }
+
+        // Templates Logic
+        function saveTemplate() {
+            const nameInput = document.getElementById('template-name-input');
+            const name = nameInput.value.trim();
+            if (!name) {
+                alert("Please enter a template name.");
+                return;
+            }
+            const content = editor.value;
+            if (!content.trim()) {
+                alert("Cannot save an empty template.");
+                return;
+            }
+
+            let templates = JSON.parse(localStorage.getItem('crmbase_templates') || '{}');
+            templates[name] = content;
+            localStorage.setItem('crmbase_templates', JSON.stringify(templates));
+            
+            nameInput.value = '';
+            alert(`Template "${name}" saved!`);
+            loadTemplates();
+        }
+
+        function loadTemplates() {
+            const select = document.getElementById('template-select');
+            const templates = JSON.parse(localStorage.getItem('crmbase_templates') || '{}');
+            
+            // Clear current options except the first one
+            while (select.options.length > 1) {
+                select.remove(1);
+            }
+            
+            for (const name of Object.keys(templates)) {
+                const opt = document.createElement('option');
+                opt.value = name;
+                opt.textContent = name;
+                select.appendChild(opt);
+            }
+        }
+
+        function applyTemplate() {
+            const select = document.getElementById('template-select');
+            const name = select.value;
+            if (!name) return;
+            
+            const templates = JSON.parse(localStorage.getItem('crmbase_templates') || '{}');
+            if (templates[name]) {
+                editor.value = templates[name];
+                // Reset select back to default
+                select.value = '';
+                // Optional: trigger save detection or update status bar
+            }
+        }
+
+        // Folder Sync (The "Trigger")
+        async function syncFolder() {
+            try {
+                if (!window.showDirectoryPicker) {
+                    throw new Error("Your browser or current setup doesn't support the File System Access API. Try using Chrome or running this on a local server (e.g., npx http-server).");
+                }
+                projectHandle = await window.showDirectoryPicker();
+                
+                // Prevent selecting the wrong folder
+                const folderName = projectHandle.name.toLowerCase();
+                if (folderName === 'src' || folderName === 'docs') {
+                    alert(`⚠️ You selected the '/${projectHandle.name}' folder.\n\nPlease select the ROOT project folder (e.g. 'crmbase.net') instead. The app needs access to the entire project to save to both /src and /Docs.`);
+                    projectHandle = null;
+                    return;
+                }
+                
+                await saveHandle(projectHandle);
+                refreshFileList();
+            } catch (err) { 
+                console.error(err);
+                alert("Folder Sync Error: " + err.message);
+            }
+        }
+
+        async function refreshFileList() {
+            fileListElem.innerHTML = '';
+            let srcFolder;
+            
+            try {
+                srcFolder = await projectHandle.getDirectoryHandle('src');
+            } catch {
+                return alert("Please ensure your project has a '/src' and a '/Docs' folder.");
+            }
+
+            async function scanDir(dirHandle, pathPrefix = "") {
+                for await (const entry of dirHandle.values()) {
+                    if (entry.kind === 'file' && entry.name.endsWith('.md')) {
+                        const div = document.createElement('div');
+                        div.className = 'file-item';
+                        div.textContent = pathPrefix + entry.name;
+                        div.onclick = () => loadFile(entry);
+                        fileListElem.appendChild(div);
+                    } else if (entry.kind === 'directory') {
+                        await scanDir(entry, pathPrefix + entry.name + "/");
+                    }
+                }
+            }
+
+            await scanDir(srcFolder);
+        }
+
+        async function loadFile(handle) {
+            activeFileHandle = handle;
+            const file = await handle.getFile();
+            editor.value = await file.text();
+            currentFileLabel.textContent = `Active: ${handle.name}`;
+            
+            document.querySelectorAll('.file-item').forEach(i => i.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        async function saveAll() {
+            if (!projectHandle || !editor.value.trim()) return alert("Sync a folder and enter content first.");
+
+            const content = editor.value;
+            const filename = activeFileHandle ? activeFileHandle.name.replace('.md', '') : content.split('\n')[0].replace(/[#*`]/g, '').trim() || "document";
+            const catInput = document.getElementById('category-input').value.trim();
+            const subCatInput = document.getElementById('subcategory-input').value.trim();
+            
+            try {
+                // Determine directories and depths
+                let targetSrcDir = await projectHandle.getDirectoryHandle('src', { create: true });
+                let targetDocsDir = await projectHandle.getDirectoryHandle('Docs', { create: true });
+                let depth = 0;
+                let relPath = "";
+
+                if (catInput) {
+                    targetSrcDir = await targetSrcDir.getDirectoryHandle(catInput, { create: true });
+                    targetDocsDir = await targetDocsDir.getDirectoryHandle(catInput, { create: true });
+                    depth++;
+                    relPath += `${catInput}/`;
+
+                    if (subCatInput) {
+                        targetSrcDir = await targetSrcDir.getDirectoryHandle(subCatInput, { create: true });
+                        targetDocsDir = await targetDocsDir.getDirectoryHandle(subCatInput, { create: true });
+                        depth++;
+                        relPath += `${subCatInput}/`;
+                    }
+                }
+
+                // 1. Save Markdown to /src
+                const mdFile = await targetSrcDir.getFileHandle(`${filename}.md`, { create: true });
+                const mdWritable = await mdFile.createWritable();
+                await mdWritable.write(content);
+                await mdWritable.close();
+
+                // 2. Save HTML to /Docs
+                const htmlFile = await targetDocsDir.getFileHandle(`${filename}.html`, { create: true });
+                const generatedHtml = generateHTML(content, filename, depth);
+                const htmlWritable = await htmlFile.createWritable();
+                await htmlWritable.write(generatedHtml);
+                await htmlWritable.close();
+
+                // 3. Update /Docs/index.html
+                try {
+                    const docsRoot = await projectHandle.getDirectoryHandle('Docs');
+                    const indexFileHandle = await docsRoot.getFileHandle('index.html');
+                    const indexFile = await indexFileHandle.getFile();
+                    const indexHtml = await indexFile.text();
+                    
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(indexHtml, 'text/html');
+                    const listContainer = doc.querySelector('.directory-list');
+                    
+                    if (listContainer) {
+                        const fileLinkHref = `${relPath}${filename}.html`;
+                        const existingLink = doc.querySelector(`a[href="${fileLinkHref}"]`);
+                        
+                        if (!existingLink) {
+                            const sizeBytes = new Blob([generatedHtml]).size;
+                            let sizeStr = sizeBytes + ' bytes';
+                            if (sizeBytes > 1024) sizeStr = (sizeBytes / 1024).toFixed(1) + ' KB';
+                            
+                            const newItem = doc.createElement('a');
+                            newItem.href = fileLinkHref;
+                            newItem.className = 'list-item';
+                            newItem.innerHTML = `
+                                <div class="file-name"><span class="icon-html"></span> ${filename}.html</div>
+                                <div class="file-type">HTML Document</div>
+                                <div class="file-size">${sizeStr}</div>
+                            `;
+
+                            let targetContainer = listContainer;
+                            let insertAfterElement = targetContainer.querySelector('.list-header');
+
+                            if (catInput) {
+                                let catGroup = Array.from(listContainer.querySelectorAll('.category-group')).find(el => el.getAttribute('data-category') === catInput);
+                                if (!catGroup) {
+                                    catGroup = doc.createElement('div');
+                                    catGroup.className = 'category-group';
+                                    catGroup.setAttribute('data-category', catInput);
+                                    catGroup.innerHTML = `
+                                        <div class="category-header"><span class="folder-icon"></span> ${catInput}</div>
+                                        <div class="category-content"></div>
+                                    `;
+                                    listContainer.appendChild(catGroup);
+                                }
+                                targetContainer = catGroup.querySelector('.category-content');
+                                insertAfterElement = null;
+
+                                if (subCatInput) {
+                                    let subGroup = Array.from(targetContainer.querySelectorAll('.subcategory-group')).find(el => el.getAttribute('data-subcategory') === subCatInput);
+                                    if (!subGroup) {
+                                        subGroup = doc.createElement('div');
+                                        subGroup.className = 'subcategory-group';
+                                        subGroup.setAttribute('data-subcategory', subCatInput);
+                                        subGroup.innerHTML = `
+                                            <div class="subcategory-header"><span class="folder-icon"></span> ${subCatInput}</div>
+                                            <div class="subcategory-content"></div>
+                                        `;
+                                        targetContainer.appendChild(subGroup);
+                                    }
+                                    targetContainer = subGroup.querySelector('.subcategory-content');
+                                }
+                            }
+
+                            if (insertAfterElement && insertAfterElement.nextSibling) {
+                                insertAfterElement.parentNode.insertBefore(newItem, insertAfterElement.nextSibling);
+                            } else {
+                                targetContainer.appendChild(newItem);
+                            }
+                            
+                            const updatedHtml = '<!DOCTYPE html>\n' + doc.documentElement.outerHTML;
+                            const indexWritable = await indexFileHandle.createWritable();
+                            await indexWritable.write(updatedHtml);
+                            await indexWritable.close();
+                        }
+                    }
+                } catch (idxErr) {
+                    console.error("Could not update Docs/index.html automatically:", idxErr);
+                }
+
+                alert(`Success: ${filename} updated dynamically!`);
+                refreshFileList();
+            } catch (err) {
+                console.error(err);
+                alert("Save failed. Ensure folder permissions are granted.");
+            }
+        }
+
+        function generateHTML(md, title, depth = 0) {
+            const body = marked.parse(md);
+            let backPrefix = "";
+            for (let i = 0; i < depth; i++) backPrefix += "../";
+
+            return `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${title}</title>
+            <style>
+                body { background:#000; color:#b0b0b0; font-family:sans-serif; padding:50px; max-width:800px; margin:0 auto; line-height:1.6; user-select: none; -webkit-user-select: none; }
+                h1,h2 { color:#fff; border-bottom:1px solid #333; padding-bottom:10px; }
+                a { color:#ff9800; pointer-events: auto; }
+                pre { background:#111; padding:35px 15px 15px 15px; border:1px solid #333; color:#ffb74d; position: relative; border-radius: 6px; }
+                pre code { user-select: text; -webkit-user-select: text; }
+                .copy-btn { position: absolute; top: 8px; left: 8px; background: #333; color: #fff; border: 1px solid #555; padding: 4px 8px; font-size: 11px; cursor: pointer; border-radius: 4px; font-weight: bold; text-transform: uppercase; }
+                .copy-btn:hover { background: #ff9800; color: #000; border-color: #ff9800; }
+                .back-link { display:inline-block; margin-bottom:20px; text-decoration:none; color:#ff9800; font-weight:bold; }
+                .back-link:hover { text-decoration:underline; }
+            </style>
+            <script>
+                // Document Lockdown
+                document.addEventListener('contextmenu', event => event.preventDefault());
+                document.onkeydown = function(e) {
+                    if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey && e.keyCode == 73) || (e.ctrlKey && e.keyCode == 85) || (e.metaKey && e.altKey && e.keyCode == 73) || (e.metaKey && e.keyCode == 85)) {
+                        return false;
+                    }
+                };
+
+                // Copy Buttons for Code Blocks
+                document.addEventListener("DOMContentLoaded", () => {
+                    document.querySelectorAll('pre').forEach(pre => {
+                        const btn = document.createElement('button');
+                        btn.className = 'copy-btn';
+                        btn.innerText = 'Copy';
+                        btn.onclick = () => {
+                            const code = pre.querySelector('code');
+                            const text = code ? code.innerText : pre.innerText;
+                            navigator.clipboard.writeText(text);
+                            btn.innerText = 'Copied!';
+                            setTimeout(() => btn.innerText = 'Copy', 2000);
+                        };
+                        pre.appendChild(btn);
+                    });
+                });
+            <\/script>
+            </head><body>
+            <a href="${backPrefix}index.html" class="back-link">← Back to Docs</a>
+            ${body}</body></html>`;
+        }
+    </script>
+</body>
+</html>

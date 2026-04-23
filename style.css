@@ -1,0 +1,117 @@
+/* General Page Setup */
+body {
+    background-color: #000000;
+    color: #b0b0b0; /* Slightly dimmed text for readability */
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.6;
+    padding: 40px;
+    max-width: 900px;
+    margin: 0 auto;
+    
+    /* Security: Prevents text highlighting */
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+/* Headings */
+h1, h2, h3 {
+    color: #ffffff;
+    font-weight: 700;
+    margin-top: 1.5em;
+    margin-bottom: 0.5em;
+}
+
+h1 {
+    font-size: 1.8rem;
+    border-bottom: none;
+    margin-top: 0;
+}
+
+/* Tagline directly under H1 */
+.tagline {
+    font-style: italic;
+    color: #888;
+    margin-top: -10px;
+    margin-bottom: 30px;
+}
+
+h2 {
+    font-size: 1.4rem;
+    border-bottom: 1px solid #222;
+    padding-bottom: 8px;
+}
+
+h3 {
+    font-size: 1.1rem;
+    margin-top: 25px;
+}
+
+/* Lists */
+ul {
+    padding-left: 20px;
+    margin-bottom: 20px;
+}
+
+li {
+    margin-bottom: 8px;
+}
+
+li strong {
+    color: #ffffff;
+}
+
+/* Table Styling */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    font-size: 0.95rem;
+    border: 1px solid #333;
+}
+
+th {
+    background-color: #1a1a1a;
+    color: #ffffff;
+    text-align: left;
+    padding: 12px;
+    border: 1px solid #333;
+}
+
+td {
+    padding: 12px;
+    border: 1px solid #333;
+    vertical-align: top;
+}
+
+/* Specific Table Column Accents */
+tr td:first-child {
+    font-weight: bold;
+    color: #ffffff;
+}
+
+/* Paragraphs */
+p {
+    margin-bottom: 15px;
+}
+
+/* Highlighted Terms */
+strong {
+    color: #ffffff;
+}
+
+/* Link Styling */
+a {
+    color: #ff9800; /* A bright, legible orange */
+    text-decoration: none;
+    transition: color 0.2s ease-in-out;
+}
+
+a:hover {
+    color: #ffb74d; /* Lightens slightly when hovered */
+    text-decoration: underline;
+}
+
+a:visited {
+    color: #e68a00; /* Slightly darker orange for visited links */
+}

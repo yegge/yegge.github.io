@@ -1,0 +1,1328 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Universal Music Vault — Administrator's Guide</title>
+            <style>
+                body { background:#000; color:#b0b0b0; font-family:sans-serif; padding:50px; max-width:800px; margin:0 auto; line-height:1.6; }
+                h1,h2 { color:#fff; border-bottom:1px solid #333; padding-bottom:10px; }
+                a { color:#ff9800; }
+                pre { background:#111; padding:15px; border:1px solid #333; color:#ffb74d; }
+                .back-link { display:inline-block; margin-bottom:20px; text-decoration:none; color:#ff9800; font-weight:bold; }
+                .back-link:hover { text-decoration:underline; }
+            </style></head><body>
+            <a href="index.html" class="back-link">← Back to Docs</a>
+            <h1>Universal Music Vault — Administrator&#39;s Guide</h1>
+<blockquote>
+<p><strong>Audience:</strong> System administrators, developers, and operators who need to run, maintain, and troubleshoot this platform. No prior knowledge of the codebase is assumed, but familiarity with a terminal, Docker, and basic web concepts is expected.</p>
+</blockquote>
+<hr>
+<h2>Table of Contents</h2>
+<ol>
+<li><a href="#1-system-overview">System Overview</a></li>
+<li><a href="#2-architecture">Architecture</a></li>
+<li><a href="#3-prerequisites">Prerequisites</a></li>
+<li><a href="#4-environment-variables">Environment Variables</a></li>
+<li><a href="#5-local-development-setup">Local Development Setup</a></li>
+<li><a href="#6-database-management">Database Management</a></li>
+<li><a href="#7-running-the-worker-process">Running the Worker Process</a></li>
+<li><a href="#8-production-deployment">Production Deployment</a></li>
+<li><a href="#9-user-roles-and-permissions">User Roles and Permissions</a></li>
+<li><a href="#10-artist-and-domain-management">Artist and Domain Management</a></li>
+<li><a href="#11-audio-upload-pipeline">Audio Upload Pipeline</a></li>
+<li><a href="#12-blog-and-content-management">Blog and Content Management</a></li>
+<li><a href="#13-media-library">Media Library</a></li>
+<li><a href="#14-review-queue">Review Queue</a></li>
+<li><a href="#15-duplicate-detection">Duplicate Detection</a></li>
+<li><a href="#16-cloudflare-r2-storage">Cloudflare R2 Storage</a></li>
+<li><a href="#17-data-model-reference">Data Model Reference</a></li>
+<li><a href="#18-api-route-reference">API Route Reference</a></li>
+<li><a href="#19-troubleshooting">Troubleshooting</a></li>
+<li><a href="#20-runbook-common-operations">Runbook: Common Operations</a></li>
+</ol>
+<hr>
+<h2>1. System Overview</h2>
+<p>Universal Music Vault is a <strong>multi-artist music streaming and publishing platform</strong>. It serves three distinct public-facing artist websites from a single codebase, determined by the domain the visitor arrives on:</p>
+<table>
+<thead>
+<tr>
+<th>Domain</th>
+<th>Artist</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>yegge.com</code></td>
+<td>Yegge</td>
+</tr>
+<tr>
+<td><code>angershade.com</code></td>
+<td>Angershade</td>
+</tr>
+<tr>
+<td><code>thecorruptive.com</code></td>
+<td>The Corruptive</td>
+</tr>
+<tr>
+<td><code>vault.yegge.com</code></td>
+<td>Admin panel (all artists)</td>
+</tr>
+</tbody></table>
+<p>Each artist website provides:</p>
+<ul>
+<li><strong>Homepage</strong> with latest release and blog posts</li>
+<li><strong>Albums / Discography</strong> listing with cover art</li>
+<li><strong>Album pages</strong> with track listings and an audio player</li>
+<li><strong>Blog</strong> with cover images, tags, and rich text</li>
+<li><strong>Search</strong> across albums, tracks, and posts</li>
+</ul>
+<p>The <strong>admin panel</strong> at <code>vault.yegge.com</code> (or <code>/admin</code> on any domain for authenticated admins) provides:</p>
+<ul>
+<li>Artist, album, and track management</li>
+<li>Audio file upload and processing pipeline monitoring</li>
+<li>Blog post creation and editing</li>
+<li>Media library (images, assets)</li>
+<li>Review queue for Collaborator-submitted content</li>
+<li>Duplicate track detection queue</li>
+<li>User management and role assignment</li>
+</ul>
+<hr>
+<h2>2. Architecture</h2>
+<pre><code>┌─────────────────────────────────────────────────────┐
+│  Browser                                            │
+│  yegge.com / angershade.com / thecorruptive.com     │
+│  vault.yegge.com (admin)                            │
+└──────────────────────┬──────────────────────────────┘
+                       │ HTTPS
+┌──────────────────────▼──────────────────────────────┐
+│  Next.js 14 App (Node.js)           port 3000       │
+│                                                     │
+│  Middleware: domain → x-artist-id header            │
+│  (artist)/   public artist pages                    │
+│  (admin)/    admin dashboard                        │
+│  /api/       REST API routes                        │
+│  /api/.../stream/audio  ← audio proxy (server-side) │
+└──────┬─────────────────────┬───────────────────────-┘
+       │ Prisma ORM           │ AWS SDK v3 (S3-compatible)
+┌──────▼───────┐    ┌────────▼──────────────────────┐
+│ PostgreSQL 16│    │  Cloudflare R2 (two buckets)  │
+│              │    │                               │
+│  Users       │    │  platform-masters (private)   │
+│  Artists     │    │   FLAC masters                │
+│  Albums      │    │   Embedded artwork            │
+│  Tracks      │    │   Blog cover images           │
+│  Jobs        │    │   Media library files         │
+│  Blog Posts  │    │                               │
+│  Media Files │    │  platform-streams (private)   │
+│  Review Queue│    │   AAC-LC 256k  (.m4a)         │
+│  ...         │    │   Opus 128k    (.opus)        │
+└──────────────┘    └───────────────────────────────┘
+                              ▲
+┌─────────────────────────────┴─────────────────────┐
+│  Background Worker (separate Node.js process)     │
+│                                                   │
+│  Poll loop (5s interval):                         │
+│   1. IngestJob   — metadata, checksum, fingerprint│
+│   2. TranscodeJob — FLAC → AAC + Opus via ffmpeg  │
+│   3. WaveformJob  — FLAC → RMS peaks array        │
+└───────────────────────────────────────────────────┘
+</code></pre>
+<h3>Technology stack</h3>
+<table>
+<thead>
+<tr>
+<th>Layer</th>
+<th>Technology</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Framework</td>
+<td>Next.js 14.2.5 (App Router)</td>
+</tr>
+<tr>
+<td>Language</td>
+<td>TypeScript 5</td>
+</tr>
+<tr>
+<td>Styling</td>
+<td>Tailwind CSS 3 + custom CSS design system</td>
+</tr>
+<tr>
+<td>ORM</td>
+<td>Prisma 5</td>
+</tr>
+<tr>
+<td>Database</td>
+<td>PostgreSQL 16</td>
+</tr>
+<tr>
+<td>Auth</td>
+<td>NextAuth v5 (JWT sessions)</td>
+</tr>
+<tr>
+<td>Object storage</td>
+<td>Cloudflare R2 (S3-compatible)</td>
+</tr>
+<tr>
+<td>Audio processing</td>
+<td>ffmpeg (transcode), fpcalc/Chromaprint (fingerprint)</td>
+</tr>
+<tr>
+<td>Worker runtime</td>
+<td>Node.js via <code>tsx</code></td>
+</tr>
+<tr>
+<td>Container</td>
+<td>Docker + Docker Compose</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>3. Prerequisites</h2>
+<h3>For local development</h3>
+<table>
+<thead>
+<tr>
+<th>Tool</th>
+<th>Minimum version</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Node.js</td>
+<td>20.x</td>
+<td>LTS recommended</td>
+</tr>
+<tr>
+<td>npm</td>
+<td>10.x</td>
+<td>Comes with Node 20</td>
+</tr>
+<tr>
+<td>PostgreSQL</td>
+<td>16</td>
+<td>Or run via Docker</td>
+</tr>
+<tr>
+<td>ffmpeg</td>
+<td>6+</td>
+<td>Must be in <code>$PATH</code>; used by worker</td>
+</tr>
+<tr>
+<td>fpcalc</td>
+<td>Any</td>
+<td>Chromaprint CLI; optional but needed for fingerprint dedup</td>
+</tr>
+<tr>
+<td>Git</td>
+<td>Any</td>
+<td></td>
+</tr>
+</tbody></table>
+<p>Install ffmpeg on macOS:</p>
+<pre><code class="language-bash">brew install ffmpeg
+</code></pre>
+<p>Install Chromaprint (fpcalc) on macOS:</p>
+<pre><code class="language-bash">brew install chromaprint
+</code></pre>
+<h3>For production / Docker deployment</h3>
+<ul>
+<li>Docker Engine 24+</li>
+<li>Docker Compose v2</li>
+<li>A domain with DNS configured for all artist domains + admin domain</li>
+<li>A Cloudflare account with two R2 buckets provisioned</li>
+<li>A Google Cloud project with OAuth credentials (for Collaborator/VIP login)</li>
+</ul>
+<hr>
+<h2>4. Environment Variables</h2>
+<p>Copy <code>.env.example</code> to <code>.env</code> and fill in every value before starting the app.</p>
+<pre><code class="language-bash">cp .env.example .env
+</code></pre>
+<h3>Complete variable reference</h3>
+<pre><code># ── Database ───────────────────────────────────────────────────────────────────
+DATABASE_URL=postgresql://platform:platform_dev@localhost:5432/platform
+# Full PostgreSQL connection string.
+# In Docker Compose this is overridden to point at the db service container.
+
+POSTGRES_PASSWORD=platform_dev
+# Only used by docker-compose.yml to initialise the postgres container.
+# Can be any string; must match the password in DATABASE_URL.
+
+# ── NextAuth ───────────────────────────────────────────────────────────────────
+NEXTAUTH_SECRET=&lt;32-byte base64 string&gt;
+AUTH_SECRET=&lt;same value as NEXTAUTH_SECRET&gt;
+# Generate with: openssl rand -base64 32
+# NEXTAUTH_SECRET and AUTH_SECRET must be identical — NextAuth v5 reads AUTH_SECRET;
+# some adapters still read NEXTAUTH_SECRET.
+
+NEXTAUTH_URL=http://localhost:3000
+# The canonical URL of the app.  In production set to https://vault.yegge.com
+# (or whichever domain is the primary admin URL).
+
+# ── Admin password ─────────────────────────────────────────────────────────────
+ADMIN_PASSWORD=&lt;strong password&gt;
+# Password for the built-in admin account.
+# This account never touches the database — it has a hardcoded id of &quot;admin&quot;
+# and always has the ADMIN role.  Keep this very secret.
+
+# ── Google OAuth ───────────────────────────────────────────────────────────────
+GOOGLE_CLIENT_ID=&lt;from Google Cloud Console&gt;
+GOOGLE_CLIENT_SECRET=&lt;from Google Cloud Console&gt;
+# Used for Collaborator and VIP sign-in.
+# Authorised redirect URI must include: https://vault.yegge.com/api/auth/callback/google
+# (and http://localhost:3000/api/auth/callback/google for dev)
+
+# ── Cloudflare R2 — Masters bucket ────────────────────────────────────────────
+R2_MASTERS_ENDPOINT=https://&lt;accountId&gt;.r2.cloudflarestorage.com
+R2_MASTERS_BUCKET=platform-masters
+R2_MASTERS_ACCESS_KEY_ID=&lt;R2 API token access key&gt;
+R2_MASTERS_SECRET_ACCESS_KEY=&lt;R2 API token secret key&gt;
+# Stores: FLAC masters, embedded artwork, blog cover images, media library files.
+# Must NEVER be public. No public bucket access allowed.
+
+# ── Cloudflare R2 — Streams bucket ────────────────────────────────────────────
+R2_STREAMS_ENDPOINT=https://&lt;accountId&gt;.r2.cloudflarestorage.com
+R2_STREAMS_BUCKET=platform-streams
+R2_STREAMS_ACCESS_KEY_ID=&lt;R2 API token access key&gt;
+R2_STREAMS_SECRET_ACCESS_KEY=&lt;R2 API token secret key&gt;
+# Stores: transcoded AAC (.m4a) and Opus (.opus) delivery files.
+# Must NEVER be public. Audio is served through the server-side proxy only.
+
+# ── Internal communication ─────────────────────────────────────────────────────
+INTERNAL_SECRET=&lt;any random string&gt;
+INTERNAL_BASE_URL=http://localhost:3000
+# The middleware calls /api/internal/resolve-domain to map domains to artists.
+# INTERNAL_SECRET protects this endpoint from external callers.
+# In Docker Compose INTERNAL_BASE_URL is set to http://localhost:3000 (the app service).
+
+# ── Admin domain ───────────────────────────────────────────────────────────────
+ADMIN_DOMAIN=vault.yegge.com
+# Requests arriving on this domain bypass artist resolution and go straight
+# to the admin panel. Leave empty in development (access /admin directly).
+</code></pre>
+<h3>Generating secrets</h3>
+<pre><code class="language-bash"># NEXTAUTH_SECRET / AUTH_SECRET
+openssl rand -base64 32
+
+# INTERNAL_SECRET (simpler is fine here)
+openssl rand -hex 16
+</code></pre>
+<hr>
+<h2>5. Local Development Setup</h2>
+<h3>Step 1 — Install dependencies</h3>
+<pre><code class="language-bash">cd platform
+npm install
+</code></pre>
+<h3>Step 2 — Start PostgreSQL</h3>
+<p>Using Docker (recommended — no local Postgres install needed):</p>
+<pre><code class="language-bash">docker compose up db -d
+</code></pre>
+<p>Or if you have Postgres running locally, create the database:</p>
+<pre><code class="language-bash">createdb platform
+createuser platform
+psql -c &quot;ALTER USER platform WITH PASSWORD &#39;platform_dev&#39;;&quot;
+psql -c &quot;GRANT ALL PRIVILEGES ON DATABASE platform TO platform;&quot;
+</code></pre>
+<h3>Step 3 — Configure environment</h3>
+<pre><code class="language-bash">cp .env.example .env
+# Edit .env and fill in at minimum:
+#   DATABASE_URL
+#   NEXTAUTH_SECRET and AUTH_SECRET (same value)
+#   ADMIN_PASSWORD
+#   INTERNAL_SECRET
+# R2 variables are only needed if you want to test file uploads.
+</code></pre>
+<h3>Step 4 — Run database migrations</h3>
+<pre><code class="language-bash">npm run db:migrate
+</code></pre>
+<p>This applies all pending Prisma migrations and generates the Prisma client.</p>
+<h3>Step 5 — Seed the database</h3>
+<pre><code class="language-bash">npm run db:seed
+</code></pre>
+<p>This creates:</p>
+<ul>
+<li>Artists: Yegge, Angershade, The Corruptive</li>
+<li>Domain mappings: <code>localhost</code> → Yegge, <code>yegge.com</code>, <code>angershade.com</code>, <code>thecorruptive.com</code></li>
+<li>A sample album (&quot;Debut EP&quot;) with 3 placeholder tracks for Yegge</li>
+</ul>
+<h3>Step 6 — Start the web server</h3>
+<pre><code class="language-bash">npm run dev
+</code></pre>
+<p>The app is now available at <code>http://localhost:3000</code>.</p>
+<ul>
+<li>The <strong>artist site</strong> (Yegge, since localhost resolves to Yegge) is at <code>/</code></li>
+<li>The <strong>admin panel</strong> is at <code>/admin</code></li>
+</ul>
+<p>Sign in at <code>/auth/signin</code> using the password you set in <code>ADMIN_PASSWORD</code>.</p>
+<h3>Step 7 — Start the worker (separate terminal)</h3>
+<p>The worker is required for audio processing. Without it, uploaded tracks will remain in <code>PENDING</code> state forever.</p>
+<pre><code class="language-bash">npm run worker
+</code></pre>
+<p>The worker polls the database every 5 seconds looking for new IngestJobs, TranscodeJobs, and WaveformJobs.</p>
+<h3>Inspecting the database with Prisma Studio</h3>
+<pre><code class="language-bash">npm run db:studio
+</code></pre>
+<p>Opens a visual database browser at <code>http://localhost:5555</code>.</p>
+<hr>
+<h2>6. Database Management</h2>
+<h3>Schema changes</h3>
+<p>The schema lives in <code>prisma/schema.prisma</code>. After editing it:</p>
+<pre><code class="language-bash"># Create and apply a new migration
+npm run db:migrate
+# Prompts for a migration name, e.g. &quot;add_track_lyrics_field&quot;
+
+# Regenerate the Prisma client (also runs automatically in db:migrate)
+npm run db:generate
+</code></pre>
+<p><strong>Never edit migration SQL files by hand</strong> unless you need to add a backfill statement. If you do add SQL, add it immediately after the schema-change statements.</p>
+<h3>Applying migrations in production</h3>
+<p>In production, use <code>migrate deploy</code> (not <code>migrate dev</code>) — it applies migrations without prompting:</p>
+<pre><code class="language-bash">npx prisma migrate deploy
+</code></pre>
+<p>The Docker Compose <code>app</code> service runs this automatically on startup:</p>
+<pre><code class="language-yaml">command: sh -c &quot;npx prisma migrate deploy &amp;&amp; npx tsx prisma/seed.ts &amp;&amp; node server.js&quot;
+</code></pre>
+<h3>Re-seeding</h3>
+<p>The seed script is idempotent (uses <code>upsert</code>), so it is safe to re-run at any time without duplicating data:</p>
+<pre><code class="language-bash">npm run db:seed
+</code></pre>
+<h3>Connecting directly to the database</h3>
+<pre><code class="language-bash"># Docker Compose
+docker compose exec db psql -U platform -d platform
+
+# Or with any Postgres client using DATABASE_URL
+psql $DATABASE_URL
+</code></pre>
+<h3>Useful diagnostic queries</h3>
+<pre><code class="language-sql">-- Jobs currently being processed
+SELECT id, status, &quot;startedAt&quot;, &quot;errorMessage&quot;
+FROM &quot;IngestJob&quot; WHERE status IN (&#39;PENDING&#39;,&#39;PROCESSING&#39;,&#39;FAILED&#39;)
+ORDER BY &quot;enqueuedAt&quot; DESC LIMIT 20;
+
+SELECT id, status, &quot;startedAt&quot;, &quot;errorMessage&quot;
+FROM &quot;TranscodeJob&quot; WHERE status IN (&#39;PENDING&#39;,&#39;PROCESSING&#39;,&#39;FAILED&#39;)
+ORDER BY &quot;enqueuedAt&quot; DESC LIMIT 20;
+
+-- Tracks with no stream files (never finished transcoding)
+SELECT t.id, t.title, t.&quot;streamStatus&quot;
+FROM &quot;Track&quot; t
+LEFT JOIN &quot;TrackFile&quot; tf ON tf.&quot;trackId&quot; = t.id AND tf.role = &#39;STREAM&#39;
+WHERE tf.id IS NULL;
+
+-- Pending review items
+SELECT * FROM &quot;ReviewQueueItem&quot; WHERE status = &#39;PENDING&#39;;
+
+-- Unresolved duplicate alerts
+SELECT * FROM &quot;DuplicateQueueItem&quot; WHERE status = &#39;PENDING&#39;;
+</code></pre>
+<hr>
+<h2>7. Running the Worker Process</h2>
+<p>The worker is a long-running Node.js process that handles all background audio processing. It is completely separate from the web server.</p>
+<h3>What it does</h3>
+<p>The worker polls the database every <strong>5 seconds</strong> and processes jobs in priority order:</p>
+<ol>
+<li><p><strong>IngestJob</strong> (highest priority)</p>
+<ul>
+<li>Downloads the FLAC master from R2 using <code>GetObjectCommand</code> directly</li>
+<li>Extracts metadata (title, track number, year, ISRC, genre) via <code>music-metadata</code></li>
+<li>Computes SHA-256 checksum for exact duplicate detection</li>
+<li>Extracts embedded cover art and stores it in R2</li>
+<li>Runs <code>fpcalc</code> to generate a Chromaprint acoustic fingerprint</li>
+<li>Runs three-pass duplicate detection (checksum → fingerprint → metadata+duration)</li>
+<li>If duplicates found, creates a <code>DuplicateQueueItem</code> for admin review</li>
+<li>Enqueues a <code>TranscodeJob</code> and <code>WaveformJob</code></li>
+</ul>
+</li>
+<li><p><strong>TranscodeJob</strong></p>
+<ul>
+<li>Downloads the FLAC from R2</li>
+<li>Transcodes to <strong>AAC-LC 256 kbps</strong> <code>.m4a</code> (primary delivery format) using ffmpeg</li>
+<li>Transcodes to <strong>Opus 128 kbps</strong> <code>.opus</code> (secondary, if libopus is available)</li>
+<li>Uploads both files to the streams R2 bucket</li>
+<li>Sets <code>streamStatus = ENABLED</code> if track <code>reviewStatus = APPROVED</code></li>
+<li>(Collaborator-uploaded tracks stay <code>DISABLED</code> until admin approves)</li>
+</ul>
+</li>
+<li><p><strong>WaveformJob</strong></p>
+<ul>
+<li>Downloads the FLAC from R2</li>
+<li>Pipes through ffmpeg to decode to raw PCM (44100 Hz, mono, f32)</li>
+<li>Computes RMS peaks at 10 peaks/second</li>
+<li>Normalises peaks so loudest = 1.0</li>
+<li>Stores the result in <code>TrackWaveform.peaks</code> as JSON</li>
+</ul>
+</li>
+</ol>
+<h3>Starting the worker</h3>
+<pre><code class="language-bash"># Development (with live TypeScript compilation via tsx)
+npm run worker
+
+# Production (same command — tsx handles TS transpilation)
+npm run worker
+</code></pre>
+<h3>Worker requirements</h3>
+<ul>
+<li><code>ffmpeg</code> must be installed and in <code>$PATH</code></li>
+<li><code>fpcalc</code> (Chromaprint) must be in <code>$PATH</code> (optional — fingerprinting is skipped gracefully if absent)</li>
+<li>R2 credentials must be set in the environment</li>
+<li><code>DATABASE_URL</code> must be set</li>
+</ul>
+<h3>Worker logs</h3>
+<p>The worker writes structured logs to stdout:</p>
+<pre><code>[worker] Started. Polling for ingest / transcode / waveform jobs...
+[worker] Ingesting track clxyz123
+[ingest] Downloading FLAC: audio/masters/clxyz123.flac
+[ingest] Extracting metadata
+[ingest] Computing SHA-256
+[ingest] Generating fingerprint (fpcalc)
+[ingest] Checking for duplicates
+[ingest] Queueing transcode + waveform
+[worker] Ingest done: clxyz123
+[worker] Transcoding track clxyz123
+[transcode] Downloading master: audio/masters/clxyz123.flac
+[transcode] AAC-LC 256k
+[transcode] Uploading AAC → audio/streams/clxyz123-aac256.m4a
+[transcode] Opus 128k
+[transcode] Uploading Opus → audio/streams/clxyz123-opus128.opus
+[transcode] Stream enabled: clxyz123
+[worker] Transcode done: clxyz123
+</code></pre>
+<hr>
+<h2>8. Production Deployment</h2>
+<h3>Option A — Docker Compose (recommended)</h3>
+<p>This is the simplest production deployment. All three services (database, web app, worker) run as Docker containers.</p>
+<h4>Build and start</h4>
+<pre><code class="language-bash"># Clone / pull the repo, then:
+cp .env.example .env
+# Fill in all variables in .env
+
+docker compose up --build -d
+</code></pre>
+<p>This starts:</p>
+<ul>
+<li><code>db</code> — PostgreSQL 16 (data persisted to a Docker volume <code>pgdata</code>)</li>
+<li><code>app</code> — Next.js web server on port 3000; runs migrations + seed on start</li>
+<li><code>worker</code> — background worker; requires ffmpeg (installed in Dockerfile.worker)</li>
+</ul>
+<h4>Check service health</h4>
+<pre><code class="language-bash">docker compose ps
+docker compose logs app      # web server logs
+docker compose logs worker   # audio processing logs
+docker compose logs db       # postgres logs
+</code></pre>
+<h4>Stop / restart</h4>
+<pre><code class="language-bash">docker compose down          # stop without removing volumes
+docker compose down -v       # stop AND wipe database (destructive!)
+docker compose restart app   # restart just the web server
+docker compose restart worker
+</code></pre>
+<h4>Updating the app</h4>
+<pre><code class="language-bash">git pull
+docker compose up --build -d
+</code></pre>
+<p>Docker Compose will rebuild only changed images and restart the affected containers. The <code>app</code> service re-runs <code>prisma migrate deploy</code> on startup, so schema changes are applied automatically.</p>
+<h4>Nginx reverse proxy (recommended for production)</h4>
+<p>Run Nginx in front of the app to handle TLS, compression, and domain routing:</p>
+<pre><code class="language-nginx"># /etc/nginx/sites-available/platform
+
+# Artist sites
+server {
+    listen 443 ssl;
+    server_name yegge.com www.yegge.com
+                angershade.com www.angershade.com
+                thecorruptive.com www.thecorruptive.com
+                vault.yegge.com;
+
+    ssl_certificate     /etc/letsencrypt/live/yegge.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/yegge.com/privkey.pem;
+
+    gzip on;
+    gzip_types text/plain text/css application/javascript application/json;
+
+    location / {
+        proxy_pass         http://127.0.0.1:3000;
+        proxy_set_header   Host              $host;
+        proxy_set_header   X-Real-IP         $remote_addr;
+        proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Proto $scheme;
+        # Needed for audio streaming (large responses, no buffering)
+        proxy_buffering    off;
+        proxy_read_timeout 300s;
+    }
+}
+
+# HTTP redirect to HTTPS
+server {
+    listen 80;
+    server_name yegge.com www.yegge.com angershade.com www.angershade.com
+                thecorruptive.com www.thecorruptive.com vault.yegge.com;
+    return 301 https://$host$request_uri;
+}
+</code></pre>
+<h4>TLS with Certbot</h4>
+<pre><code class="language-bash">certbot --nginx -d yegge.com -d www.yegge.com \
+  -d angershade.com -d www.angershade.com \
+  -d thecorruptive.com -d www.thecorruptive.com \
+  -d vault.yegge.com
+</code></pre>
+<h3>Option B — Manual (no Docker)</h3>
+<pre><code class="language-bash"># Install deps
+npm ci
+
+# Generate Prisma client
+npm run db:generate
+
+# Build Next.js
+npm run build
+
+# Apply migrations
+npx prisma migrate deploy
+
+# Seed (only first time)
+npm run db:seed
+
+# Start web server
+npm start                # listens on port 3000
+
+# Start worker (separate terminal or process manager)
+npm run worker
+</code></pre>
+<p>Use a process manager like <code>pm2</code> or <code>systemd</code> to keep both processes running:</p>
+<pre><code class="language-bash"># pm2 example
+pm2 start &quot;npm run start&quot; --name platform-web
+pm2 start &quot;npm run worker&quot; --name platform-worker
+pm2 save
+pm2 startup
+</code></pre>
+<h3>Environment variables in production</h3>
+<p>The Docker Compose <code>app</code> and <code>worker</code> services both load <code>.env</code> via <code>env_file</code>. Docker overrides <code>DATABASE_URL</code> to point to the internal <code>db</code> service.</p>
+<p>In a non-Docker deployment, load <code>.env</code> before starting:</p>
+<pre><code class="language-bash">export $(cat .env | grep -v &#39;#&#39; | xargs)
+npm start
+</code></pre>
+<p>Or use a tool like <code>dotenv-cli</code>:</p>
+<pre><code class="language-bash">npx dotenv -e .env -- npm start
+</code></pre>
+<hr>
+<h2>9. User Roles and Permissions</h2>
+<p>The platform has four roles. Each user has exactly one role.</p>
+<table>
+<thead>
+<tr>
+<th>Role</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>ADMIN</code></td>
+<td>Full access to everything. Manages artists, albums, tracks, users, and approves content.</td>
+</tr>
+<tr>
+<td><code>COLLABORATOR</code></td>
+<td>Can upload tracks and write blog posts for assigned artists. All content goes through the review queue before publishing.</td>
+</tr>
+<tr>
+<td><code>VIP</code></td>
+<td>Read-only elevated access. Can stream private/listed tracks for artists they have a VIP grant for.</td>
+</tr>
+<tr>
+<td><code>PUBLIC</code></td>
+<td>Unauthenticated visitors. Can only see PUBLIC+APPROVED content.</td>
+</tr>
+</tbody></table>
+<h3>How roles are assigned</h3>
+<p><strong>Admin</strong> — There is a single built-in admin account. Sign in at <code>/auth/signin</code> with the <code>ADMIN_PASSWORD</code> from <code>.env</code>. This account has the id <code>&quot;admin&quot;</code> and never touches the database.</p>
+<p><strong>Collaborators and VIPs</strong> sign in with Google OAuth. After their first sign-in their account is created with role <code>PUBLIC</code>. An admin must then:</p>
+<ol>
+<li>Go to <code>vault.yegge.com/admin/users</code></li>
+<li>Find the user by email</li>
+<li>Change their role to <code>COLLABORATOR</code> or <code>VIP</code></li>
+<li>For Collaborators, assign them to specific artists via the Collab Assignments section</li>
+<li>For VIPs, grant them per-artist access (optionally with an expiry date) via VIP Grants</li>
+</ol>
+<p>Role changes take effect the next time the user signs out and back in (JWT sessions are valid for 30 days).</p>
+<h3>Streaming access rules</h3>
+<table>
+<thead>
+<tr>
+<th>Role</th>
+<th>Can stream PUBLIC tracks</th>
+<th>Can stream LISTED tracks</th>
+<th>Can stream PRIVATE tracks</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>ADMIN</td>
+<td>✓ (even DISABLED)</td>
+<td>✓</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>VIP (granted)</td>
+<td>✓</td>
+<td>✓</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>VIP (not granted)</td>
+<td>✓</td>
+<td>✗</td>
+<td>✗</td>
+</tr>
+<tr>
+<td>COLLABORATOR</td>
+<td>✓ (PUBLIC only)</td>
+<td>✗</td>
+<td>✗</td>
+</tr>
+<tr>
+<td>PUBLIC</td>
+<td>✓</td>
+<td>✗</td>
+<td>✗</td>
+</tr>
+</tbody></table>
+<p>All streaming goes through the <code>/stream/audio</code> proxy — the R2 bucket URL is <strong>never</strong> sent to the browser.</p>
+<h3>Visibility vs. streamStatus</h3>
+<p>These two flags are independent:</p>
+<ul>
+<li><strong>Visibility</strong> (<code>PUBLIC</code> / <code>LISTED</code> / <code>PRIVATE</code>) — controls who sees the track in listings and search</li>
+<li><strong>streamStatus</strong> (<code>ENABLED</code> / <code>DISABLED</code>) — controls whether the audio file is available to play. A track is <code>DISABLED</code> until transcoding finishes (or until admin approves a Collaborator submission).</li>
+</ul>
+<p>A track must have both <code>visibility = PUBLIC</code> AND <code>streamStatus = ENABLED</code> for a public visitor to hear it.</p>
+<hr>
+<h2>10. Artist and Domain Management</h2>
+<h3>The domain routing system</h3>
+<p>When a request arrives, the middleware reads the <code>Host</code> header and calls <code>GET /api/internal/resolve-domain?domain=&lt;host&gt;</code>. This lookup is cached in-process for 5 minutes.</p>
+<p>The resolved <code>artistId</code> is injected as the <code>x-artist-id</code> request header. Every Server Component in the <code>(artist)</code> route group reads this header to scope its database queries.</p>
+<h3>Adding a new artist</h3>
+<ol>
+<li>Go to <code>vault.yegge.com/admin/artists/new</code></li>
+<li>Fill in: name, slug (URL-safe identifier), bio, avatar</li>
+<li>Save. The artist now exists in the database.</li>
+<li>Add domain mappings under the artist&#39;s settings page, e.g.:<ul>
+<li><code>newartist.com</code> (primary)</li>
+<li><code>www.newartist.com</code></li>
+</ul>
+</li>
+<li>Point DNS A records for those domains to your server</li>
+<li>Add the domain to your Nginx config (or SSL cert)</li>
+</ol>
+<h3>The ADMIN_DOMAIN bypass</h3>
+<p>Requests arriving on <code>vault.yegge.com</code> skip artist resolution entirely — the middleware lets them through directly to the <code>(admin)</code> route group, which handles its own auth. This means the admin panel is accessible regardless of which artist is &quot;active&quot; on that domain.</p>
+<hr>
+<h2>11. Audio Upload Pipeline</h2>
+<h3>Overview</h3>
+<pre><code>Admin uploads FLAC file
+        ↓
+Browser gets presigned PUT URL  (/api/.../upload-master)
+        ↓
+Browser PUTs directly to R2 masters bucket
+        ↓
+Browser confirms upload  (/api/.../confirm-master)
+        ↓
+Server creates IngestJob (status: PENDING)
+        ↓
+Worker picks up IngestJob
+   → extracts metadata → checksums → fingerprint → dup check
+   → creates TranscodeJob + WaveformJob
+        ↓
+Worker picks up TranscodeJob
+   → FLAC → AAC-LC 256k m4a (+ Opus 128k if libopus available)
+   → uploads streams to R2
+   → sets streamStatus = ENABLED (if reviewStatus = APPROVED)
+        ↓
+Worker picks up WaveformJob (in parallel with transcode)
+   → FLAC → PCM → RMS peaks array
+   → stores in TrackWaveform table
+        ↓
+Track is now streamable; waveform is visible in the player
+</code></pre>
+<h3>File storage layout in R2</h3>
+<pre><code>platform-masters/
+  audio/masters/{trackId}.flac          ← uploaded FLAC
+  artwork/{artistId}/{trackId}.jpg       ← embedded cover art (extracted by ingest)
+  blog-covers/{artistId}/{postId}.{ext}  ← blog post cover images
+  media/{artistId}/{fileId}/{filename}   ← media library uploads
+
+platform-streams/
+  audio/streams/{trackId}-aac256.m4a    ← transcoded AAC delivery file
+  audio/streams/{trackId}-opus128.opus  ← transcoded Opus delivery file (optional)
+</code></pre>
+<h3>Monitoring processing progress</h3>
+<p>Admin panel: <code>vault.yegge.com/admin/transcode-jobs</code></p>
+<p>Database:</p>
+<pre><code class="language-sql">-- Active jobs by status
+SELECT status, COUNT(*) FROM &quot;IngestJob&quot; GROUP BY status;
+SELECT status, COUNT(*) FROM &quot;TranscodeJob&quot; GROUP BY status;
+SELECT status, COUNT(*) FROM &quot;TrackWaveform&quot; GROUP BY status;
+</code></pre>
+<h3>What happens if the worker is not running</h3>
+<p>Tracks will show status <code>processing</code> indefinitely. Their <code>streamStatus</code> stays <code>DISABLED</code> and they cannot be played. Start the worker to resume processing — jobs accumulate in the queue and will all be processed when the worker comes back up.</p>
+<h3>Retrying failed jobs</h3>
+<p>The worker does not automatically retry failed jobs. To retry:</p>
+<pre><code class="language-sql">-- Retry all failed transcode jobs
+UPDATE &quot;TranscodeJob&quot;
+SET status = &#39;PENDING&#39;, &quot;errorMessage&quot; = NULL, &quot;startedAt&quot; = NULL
+WHERE status = &#39;FAILED&#39;;
+
+-- Retry a specific ingest job
+UPDATE &quot;IngestJob&quot;
+SET status = &#39;PENDING&#39;, &quot;errorMessage&quot; = NULL, &quot;startedAt&quot; = NULL
+WHERE &quot;trackId&quot; = &#39;&lt;trackId&gt;&#39;;
+</code></pre>
+<p>Then ensure the worker is running.</p>
+<h3>Re-ingesting a track</h3>
+<p>If you need to re-process a track from scratch (e.g. the FLAC was replaced):</p>
+<pre><code class="language-sql">UPDATE &quot;IngestJob&quot;
+SET status = &#39;PENDING&#39;, &quot;errorMessage&quot; = NULL, &quot;startedAt&quot; = NULL, &quot;completedAt&quot; = NULL
+WHERE &quot;trackId&quot; = &#39;&lt;trackId&gt;&#39;;
+
+UPDATE &quot;TranscodeJob&quot;
+SET status = &#39;PENDING&#39;, &quot;errorMessage&quot; = NULL, &quot;startedAt&quot; = NULL, &quot;completedAt&quot; = NULL
+WHERE &quot;trackId&quot; = &#39;&lt;trackId&gt;&#39;;
+
+UPDATE &quot;TrackWaveform&quot;
+SET status = &#39;PENDING&#39;, &quot;startedAt&quot; = NULL
+WHERE &quot;trackId&quot; = &#39;&lt;trackId&gt;&#39;;
+</code></pre>
+<hr>
+<h2>12. Blog and Content Management</h2>
+<h3>Blog post lifecycle</h3>
+<ol>
+<li><strong>Draft</strong> — visibility = <code>PRIVATE</code>, <code>publishedAt</code> = null. Not visible publicly.</li>
+<li><strong>Published</strong> — visibility = <code>PUBLIC</code> or <code>LISTED</code>, <code>reviewStatus</code> = <code>APPROVED</code>, <code>publishedAt</code> is set. Visible publicly.</li>
+<li><strong>Collaborator submissions</strong> — when a Collaborator creates/publishes a post, visibility is forced to <code>PRIVATE</code> and a <code>ReviewQueueItem</code> is created. The post doesn&#39;t appear publicly until an admin approves it.</li>
+</ol>
+<h3>Backdating posts</h3>
+<p>Admins can set an explicit <code>publishedAt</code> date when creating or editing a post. This allows:</p>
+<ul>
+<li>Publishing old content with its original date</li>
+<li>Scheduling posts (set <code>publishedAt</code> in the future — post won&#39;t appear until then, since the public feed filters by <code>publishedAt &lt;= NOW()</code>)</li>
+</ul>
+<h3>Tags</h3>
+<p>Tags are global across all artists (a <code>BlogTag</code> has a unique <code>slug</code>). Tags are managed at <code>vault.yegge.com/admin/artists/[id]/blog</code>.</p>
+<p>To create a new tag: POST to <code>/api/artists/[artistId]/blog/tags</code> with <code>{ name, slug }</code>. Tags upsert on slug.</p>
+<h3>Embed URLs</h3>
+<p>A blog post can include one embedded media URL (<code>embedUrl</code>). Allowed hosts are:</p>
+<pre><code>youtube.com, youtu.be, www.youtube.com
+vimeo.com, player.vimeo.com
+spotify.com, open.spotify.com
+soundcloud.com
+</code></pre>
+<p>Embed URLs are validated server-side. Invalid domains are rejected with a 400 error.</p>
+<h3>Blog cover images</h3>
+<p>Cover images are stored in R2 at <code>blog-covers/{artistId}/{postId}.{ext}</code>. The upload flow:</p>
+<ol>
+<li>POST <code>/api/artists/[id]/blog/[postId]/upload-cover</code> → returns a presigned PUT URL</li>
+<li>Browser PUTs the image file directly to R2</li>
+<li>Server updates <code>BlogPost.coverKey</code></li>
+</ol>
+<p>Cover images are served via signed URLs (60-minute expiry) generated server-side. They are never exposed directly from R2.</p>
+<hr>
+<h2>13. Media Library</h2>
+<p>The media library is a per-artist store of images and assets that can be referenced in blog posts.</p>
+<h3>Upload flow</h3>
+<ol>
+<li>POST <code>/api/artists/[id]/media/upload-url</code> with <code>{ filename, contentType }</code> → returns <code>{ uploadUrl, objectKey, fileId }</code></li>
+<li>Browser PUTs the file directly to R2 using the presigned URL</li>
+<li>POST <code>/api/artists/[id]/media/confirm</code> with <code>{ fileId, objectKey, filename, mimeType, sizeBytes }</code> → creates the <code>MediaFile</code> record</li>
+</ol>
+<h3>Accessing files</h3>
+<p>GET <code>/api/artists/[id]/media/[mediaId]/url</code> → returns a short-lived signed URL for the file.</p>
+<h3>Deleting files</h3>
+<p>DELETE <code>/api/artists/[id]/media/[mediaId]</code> — deletes the R2 object and the database record.</p>
+<hr>
+<h2>14. Review Queue</h2>
+<p>The review queue holds content submitted by Collaborators that needs admin approval before going public.</p>
+<p>Entities that go through review:</p>
+<ul>
+<li><strong>Tracks</strong> — when a Collaborator uploads a track with visibility <code>PUBLIC</code> or <code>LISTED</code></li>
+<li><strong>Albums</strong> — when a Collaborator creates/publishes an album</li>
+<li><strong>Blog posts</strong> — when a Collaborator creates/publishes a post</li>
+<li><strong>Media files</strong> — when a Collaborator uploads to the media library</li>
+</ul>
+<h3>Reviewing items</h3>
+<p>Admin panel: <code>vault.yegge.com/admin/review-queue</code></p>
+<p>Each item shows:</p>
+<ul>
+<li>Entity type (Track, Album, Blog Post, Media File)</li>
+<li>Artist</li>
+<li>Submitter and submission date</li>
+<li>Requested visibility</li>
+</ul>
+<p><strong>Approving</strong> an item:</p>
+<ul>
+<li>Sets the entity&#39;s <code>reviewStatus = APPROVED</code></li>
+<li>Sets <code>visibility</code> to the <code>targetVisibility</code> stored in the queue item</li>
+<li>For tracks: sets <code>streamStatus = ENABLED</code> (if transcoding is complete)</li>
+</ul>
+<p><strong>Rejecting</strong> an item:</p>
+<ul>
+<li>Sets the entity&#39;s <code>reviewStatus = REJECTED</code></li>
+<li>Entity stays <code>PRIVATE</code></li>
+<li>Optional rejection notes are stored</li>
+</ul>
+<h3>API endpoints</h3>
+<pre><code>GET  /api/admin/review-queue                — list all PENDING items
+POST /api/admin/review-queue/[itemId]/approve  — body: { targetVisibility? }
+POST /api/admin/review-queue/[itemId]/reject   — body: { notes? }
+</code></pre>
+<hr>
+<h2>15. Duplicate Detection</h2>
+<p>When a track is ingested, the worker compares it against every other track for the same artist using three passes:</p>
+<table>
+<thead>
+<tr>
+<th>Pass</th>
+<th>Method</th>
+<th>Confidence</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>SHA-256 checksum match</td>
+<td>1.0 — bit-identical files</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Chromaprint cross-correlation</td>
+<td>0.85+ — acoustically identical audio</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Title + duration within 3 seconds</td>
+<td>0.70–0.79 — metadata fallback</td>
+</tr>
+</tbody></table>
+<p>If any pass exceeds its threshold, a <code>DuplicateQueueItem</code> is created.</p>
+<h3>Resolving duplicates</h3>
+<p>Admin panel: <code>vault.yegge.com/admin/duplicates</code></p>
+<p>For each pair, the admin chooses a resolution:</p>
+<table>
+<thead>
+<tr>
+<th>Resolution</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>CONFIRMED_DUPLICATE</code></td>
+<td>Track A is a duplicate → delete it</td>
+</tr>
+<tr>
+<td><code>KEEP_BOTH</code></td>
+<td>Different enough to coexist</td>
+</tr>
+<tr>
+<td><code>ALTERNATE_VERSION</code></td>
+<td>Same song, different recording/mix</td>
+</tr>
+<tr>
+<td><code>REMIX</code></td>
+<td>A is a deliberate remix of B</td>
+</tr>
+<tr>
+<td><code>REJECT_UPLOAD</code></td>
+<td>Reject A&#39;s upload (wrong file, poor quality)</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>16. Cloudflare R2 Storage</h2>
+<h3>Bucket setup</h3>
+<p>Create two buckets in the Cloudflare dashboard:</p>
+<table>
+<thead>
+<tr>
+<th>Bucket name</th>
+<th>Visibility</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>platform-masters</code></td>
+<td><strong>Private</strong> (no public access)</td>
+<td>FLAC masters, artwork, blog covers, media files</td>
+</tr>
+<tr>
+<td><code>platform-streams</code></td>
+<td><strong>Private</strong> (no public access)</td>
+<td>Transcoded AAC and Opus delivery files</td>
+</tr>
+</tbody></table>
+<p><strong>Important:</strong> Both buckets must have public access disabled. The application uses signed URLs and server-side proxying exclusively — R2 URLs are never sent to browsers.</p>
+<h3>Creating R2 API tokens</h3>
+<p>In the Cloudflare dashboard → R2 → Manage R2 API Tokens:</p>
+<p>Create <strong>two separate tokens</strong> (one per bucket) with <strong>Object Read &amp; Write</strong> permission scoped to each bucket. Copy the Access Key ID and Secret Access Key into your <code>.env</code>.</p>
+<p>The endpoint format is:</p>
+<pre><code>https://&lt;CLOUDFLARE_ACCOUNT_ID&gt;.r2.cloudflarestorage.com
+</code></pre>
+<p>Find your Account ID in the Cloudflare dashboard sidebar.</p>
+<h3>CORS configuration</h3>
+<p>If you upload files directly from the browser to R2 (the presigned PUT URL flow), you must configure CORS on both buckets. In the Cloudflare dashboard → bucket → Settings → CORS:</p>
+<pre><code class="language-json">[
+  {
+    &quot;AllowedOrigins&quot;: [&quot;https://vault.yegge.com&quot;, &quot;http://localhost:3000&quot;],
+    &quot;AllowedMethods&quot;: [&quot;PUT&quot;, &quot;GET&quot;],
+    &quot;AllowedHeaders&quot;: [&quot;Content-Type&quot;, &quot;Content-Length&quot;],
+    &quot;MaxAgeSeconds&quot;: 3600
+  }
+]
+</code></pre>
+<h3>Storage growth</h3>
+<p>Each audio track occupies roughly:</p>
+<ul>
+<li>Masters: ~40 MB per 4-minute FLAC</li>
+<li>Streams: ~8 MB AAC + ~4 MB Opus per 4-minute track</li>
+</ul>
+<p>Monitor usage in the Cloudflare dashboard. R2 charges $0.015/GB/month with 10 GB free.</p>
+<hr>
+<h2>17. Data Model Reference</h2>
+<h3>Core entities</h3>
+<p><strong>Artist</strong> — Top-level entity. Has a slug (URL path), name, bio, and optional avatar image key. Owns albums, blog posts, media files, and review items.</p>
+<p><strong>Album</strong> — Belongs to an artist. Has a slug, title, cover image, visibility, and release year. Contains tracks.</p>
+<p><strong>Track</strong> — Belongs to an album. Has a slug, title, duration, track number, visibility, and stream status. Goes through the ingest → transcode → waveform pipeline.</p>
+<p><strong>TrackFile</strong> — A file associated with a track. Roles:</p>
+<ul>
+<li><code>MASTER</code> — the original FLAC upload</li>
+<li><code>STREAM</code> — transcoded AAC-LC .m4a for delivery</li>
+<li><code>STREAM_OPUS</code> — transcoded Opus .opus for delivery (optional)</li>
+</ul>
+<p><strong>TrackWaveform</strong> — Separate table storing the waveform peaks JSON. Kept separate to avoid bloating track list queries.</p>
+<h3>User/permission entities</h3>
+<p><strong>User</strong> — Anyone who has signed in via Google OAuth. Has a role (<code>PUBLIC</code> by default).</p>
+<p><strong>CollabAssignment</strong> — Links a <code>COLLABORATOR</code> user to a specific artist, granting write access to that artist&#39;s content.</p>
+<p><strong>VipGrant</strong> — Links a <code>VIP</code> user to a specific artist with optional expiry date, granting streaming access to private/listed tracks.</p>
+<h3>Job entities</h3>
+<p><strong>IngestJob</strong> — Created when a FLAC is uploaded. Worker processes metadata, checksums, fingerprints, and duplicate detection.</p>
+<p><strong>TranscodeJob</strong> — Created by the ingest worker. Transcodes FLAC to AAC + Opus.</p>
+<p><strong>TrackWaveform</strong> (also used as a job) — Created with <code>status = PENDING</code> by ingest. Worker fills in peaks and sets <code>status = READY</code>.</p>
+<p><strong>DuplicateQueueItem</strong> — Created by ingest when a potential duplicate is detected. Admin reviews and resolves.</p>
+<p><strong>ReviewQueueItem</strong> — Created when a Collaborator submits content for publishing. Admin approves or rejects.</p>
+<h3>Visibility and review</h3>
+<p>Visibility and reviewStatus are <strong>independent</strong>:</p>
+<pre><code>Track.visibility    = PUBLIC | LISTED | PRIVATE
+Track.reviewStatus  = PENDING | APPROVED | REJECTED
+Track.streamStatus  = ENABLED | DISABLED
+</code></pre>
+<p>A track must have:</p>
+<ul>
+<li><code>visibility = PUBLIC</code> for public visitors to see it</li>
+<li><code>streamStatus = ENABLED</code> for the play button to work</li>
+<li><code>reviewStatus = APPROVED</code> for Collaborator-submitted content to become visible</li>
+</ul>
+<hr>
+<h2>18. API Route Reference</h2>
+<p>All API routes require authentication unless noted as <strong>public</strong>. Routes under <code>/api/artists/[artistId]/</code> require the caller to have at least &quot;read&quot; access for the artist&#39;s content.</p>
+<h3>Artist routes</h3>
+<pre><code>GET    /api/artists                        — list all artists (admin only)
+POST   /api/artists                        — create artist (admin only)
+GET    /api/artists/[artistId]             — get artist details
+PATCH  /api/artists/[artistId]             — update artist (admin only)
+DELETE /api/artists/[artistId]             — delete artist (admin only)
+</code></pre>
+<h3>Album routes</h3>
+<pre><code>GET    /api/artists/[artistId]/albums              — list albums (visibility-filtered)
+POST   /api/artists/[artistId]/albums              — create album (write access)
+GET    /api/artists/[artistId]/albums/[albumId]    — get album + tracks
+PATCH  /api/artists/[artistId]/albums/[albumId]    — update album
+DELETE /api/artists/[artistId]/albums/[albumId]    — delete album (admin only)
+</code></pre>
+<h3>Track routes</h3>
+<pre><code>GET    /api/artists/[artistId]/albums/[albumId]/tracks              — list tracks
+POST   /api/artists/[artistId]/albums/[albumId]/tracks              — create track
+GET    /api/artists/[artistId]/albums/[albumId]/tracks/[trackId]    — get track
+PATCH  /api/artists/[artistId]/albums/[albumId]/tracks/[trackId]    — update track
+DELETE /api/artists/[artistId]/albums/[albumId]/tracks/[trackId]    — delete track + R2 files
+POST   /api/artists/[artistId]/albums/[albumId]/tracks/[trackId]/upload-master   — get presigned PUT URL
+POST   /api/artists/[artistId]/albums/[albumId]/tracks/[trackId]/confirm-master  — confirm upload + enqueue ingest
+GET    /api/artists/[artistId]/albums/[albumId]/tracks/[trackId]/stream/audio    — audio proxy (Range-aware)
+GET    /api/artists/[artistId]/albums/[albumId]/tracks/[trackId]/waveform        — get waveform peaks
+</code></pre>
+<h3>Blog routes</h3>
+<pre><code>GET    /api/artists/[artistId]/blog                    — list posts (visibility-filtered, public)
+POST   /api/artists/[artistId]/blog                    — create post (write access)
+GET    /api/artists/[artistId]/blog/[postId]           — get post
+PATCH  /api/artists/[artistId]/blog/[postId]           — update post
+DELETE /api/artists/[artistId]/blog/[postId]           — delete post + cover from R2
+POST   /api/artists/[artistId]/blog/[postId]/publish   — publish/unpublish post
+POST   /api/artists/[artistId]/blog/[postId]/upload-cover — get presigned PUT URL for cover
+GET    /api/artists/[artistId]/blog/tags               — list all tags (public)
+POST   /api/artists/[artistId]/blog/tags               — create/upsert tag (admin only)
+</code></pre>
+<h3>Media library routes</h3>
+<pre><code>GET    /api/artists/[artistId]/media                   — list media files (write access)
+POST   /api/artists/[artistId]/media/upload-url        — get presigned PUT URL
+POST   /api/artists/[artistId]/media/confirm           — confirm upload + create record
+GET    /api/artists/[artistId]/media/[mediaId]/url     — get short-lived signed URL
+DELETE /api/artists/[artistId]/media/[mediaId]         — delete file + R2 object
+</code></pre>
+<h3>Admin routes</h3>
+<pre><code>GET    /api/admin/review-queue                           — list PENDING items
+POST   /api/admin/review-queue/[itemId]/approve          — approve content
+POST   /api/admin/review-queue/[itemId]/reject           — reject content
+GET    /api/admin/duplicates                             — list PENDING duplicates
+POST   /api/admin/duplicates/[itemId]/resolve            — resolve duplicate pair
+</code></pre>
+<h3>User management</h3>
+<pre><code>GET    /api/users                                         — list users (admin)
+PATCH  /api/users/[userId]                                — update role (admin)
+GET    /api/users/[userId]/collab-assignments             — list assignments (admin)
+POST   /api/users/[userId]/collab-assignments             — assign to artist (admin)
+DELETE /api/users/[userId]/collab-assignments/[artistId]  — remove assignment (admin)
+GET    /api/users/[userId]/vip-grants                     — list grants (admin)
+POST   /api/users/[userId]/vip-grants                     — grant VIP access (admin)
+DELETE /api/users/[userId]/vip-grants/[artistId]          — revoke grant (admin)
+</code></pre>
+<h3>Internal</h3>
+<pre><code>GET /api/internal/resolve-domain?domain=&lt;host&gt;
+  — Maps a hostname to an artistId. Called by the middleware.
+  — Protected by x-internal-secret header. Never call this externally.
+</code></pre>
+<hr>
+<h2>19. Troubleshooting</h2>
+<h3>The app won&#39;t start</h3>
+<p><strong>Symptom:</strong> <code>npm run dev</code> crashes immediately.</p>
+<ol>
+<li><p>Check that PostgreSQL is running:</p>
+<pre><code class="language-bash">docker compose ps db
+# or
+pg_isready -h localhost -p 5432
+</code></pre>
+</li>
+<li><p>Check that <code>DATABASE_URL</code> is correct:</p>
+<pre><code class="language-bash">npx prisma db pull 2&gt;&amp;1 | head -5
+</code></pre>
+</li>
+<li><p>Check that migrations have been applied:</p>
+<pre><code class="language-bash">npm run db:migrate
+</code></pre>
+</li>
+<li><p>Check for missing environment variables — the app will fail with a descriptive error if any required variable is missing.</p>
+</li>
+</ol>
+<hr>
+<h3>Domain resolves to wrong artist / &quot;Unknown domain&quot; page</h3>
+<p><strong>Symptom:</strong> Visiting <code>localhost:3000</code> shows the &quot;unknown domain&quot; error page.</p>
+<ol>
+<li><p>The database seed was not run. Run:</p>
+<pre><code class="language-bash">npm run db:seed
+</code></pre>
+</li>
+<li><p>Localhost is not mapped to an artist. Check <code>ArtistDomain</code> table:</p>
+<pre><code class="language-sql">SELECT * FROM &quot;ArtistDomain&quot; WHERE domain = &#39;localhost&#39;;
+</code></pre>
+<p>If missing, add it:</p>
+<pre><code class="language-sql">INSERT INTO &quot;ArtistDomain&quot; (id, domain, &quot;artistId&quot;, &quot;isPrimary&quot;, &quot;createdAt&quot;)
+VALUES (gen_random_uuid()::text, &#39;localhost&#39;, &#39;&lt;yegge artistId&gt;&#39;, true, now());
+</code></pre>
+</li>
+<li><p>The middleware cache is stale (5-minute TTL). Restart the dev server.</p>
+</li>
+</ol>
+<hr>
+<h3>Audio player shows &quot;processing&quot; but the worker is running</h3>
+<p><strong>Symptom:</strong> Tracks show a spinner or &quot;processing&quot; state indefinitely.</p>
+<ol>
+<li><p>Check the worker logs for errors:</p>
+<pre><code class="language-bash">docker compose logs worker --tail=50
+# or
+npm run worker  # and watch stdout
+</code></pre>
+</li>
+<li><p>Check for failed jobs:</p>
+<pre><code class="language-sql">SELECT id, &quot;trackId&quot;, status, &quot;errorMessage&quot;
+FROM &quot;TranscodeJob&quot; WHERE status = &#39;FAILED&#39; ORDER BY &quot;enqueuedAt&quot; DESC LIMIT 10;
+</code></pre>
+</li>
+<li><p>Common worker failures:</p>
+<ul>
+<li><strong>ffmpeg not found</strong> — install ffmpeg and ensure it&#39;s in <code>$PATH</code></li>
+<li><strong>R2 credentials wrong</strong> — verify <code>R2_MASTERS_*</code> variables</li>
+<li><strong>No MASTER TrackFile found</strong> — the FLAC was never confirmed after upload; the confirm-master endpoint was not called. Re-upload the track.</li>
+<li><strong>Out of disk space</strong> — the worker writes temp files to <code>/tmp</code>; check disk usage</li>
+</ul>
+</li>
+<li><p>Retry failed jobs (see §11 Retrying failed jobs).</p>
+</li>
+</ol>
+<hr>
+<h3>Audio proxy returns 503</h3>
+<p><strong>Symptom:</strong> Playing a track returns <code>{&quot;error&quot;:&quot;not_ready&quot;,&quot;message&quot;:&quot;Audio is still being processed&quot;}</code>.</p>
+<p>The track has no <code>STREAM</code> or <code>STREAM_OPUS</code> <code>TrackFile</code> yet. Transcoding hasn&#39;t completed (or failed). See above.</p>
+<hr>
+<h3>Audio proxy returns 403</h3>
+<p><strong>Symptom:</strong> Clicking play shows a forbidden error.</p>
+<ol>
+<li>The user is not authenticated and the track is <code>PRIVATE</code> or <code>LISTED</code>.</li>
+<li>The track&#39;s <code>streamStatus</code> is <code>DISABLED</code> (transcoding not complete, or Collaborator content awaiting approval).</li>
+<li>Check <code>Track.streamStatus</code> and <code>Track.visibility</code> in the database.</li>
+</ol>
+<hr>
+<h3>Sign-in fails with &quot;Configuration&quot; error</h3>
+<p><strong>Symptom:</strong> Visiting <code>/auth/signin</code> and attempting to sign in results in an error page.</p>
+<ol>
+<li><p><strong>For admin password login:</strong> Check that <code>ADMIN_PASSWORD</code> is set in <code>.env</code>.</p>
+</li>
+<li><p><strong>For Google OAuth:</strong></p>
+<ul>
+<li>Verify <code>GOOGLE_CLIENT_ID</code> and <code>GOOGLE_CLIENT_SECRET</code> are set correctly.</li>
+<li>Verify the OAuth consent screen is configured in Google Cloud Console.</li>
+<li>Verify the Authorised Redirect URI includes your domain:<pre><code>https://vault.yegge.com/api/auth/callback/google
+http://localhost:3000/api/auth/callback/google  (for dev)
+</code></pre>
+</li>
+<li>Verify <code>NEXTAUTH_URL</code> / <code>NEXTAUTH_SECRET</code> / <code>AUTH_SECRET</code> are set.</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h3>New user signs in but has no access</h3>
+<p><strong>Symptom:</strong> User can sign in via Google but sees the public site only.</p>
+<p>This is expected. New Google OAuth users get role <code>PUBLIC</code> by default. An admin must:</p>
+<ol>
+<li>Go to <code>vault.yegge.com/admin/users</code></li>
+<li>Find the user and change their role</li>
+<li>For Collaborators, add a Collab Assignment for the relevant artist</li>
+</ol>
+<p>The user must sign out and sign back in for the role change to appear in their session.</p>
+<hr>
+<h3>Blog posts not appearing on the public site</h3>
+<p><strong>Symptom:</strong> A post was created but doesn&#39;t show on <code>/blog</code>.</p>
+<p>Check all of these:</p>
+<ol>
+<li><code>visibility</code> must be <code>PUBLIC</code> or <code>LISTED</code> (not <code>PRIVATE</code>)</li>
+<li><code>reviewStatus</code> must be <code>APPROVED</code></li>
+<li><code>publishedAt</code> must be set and not in the future</li>
+</ol>
+<pre><code class="language-sql">SELECT id, title, visibility, &quot;reviewStatus&quot;, &quot;publishedAt&quot;
+FROM &quot;BlogPost&quot;
+WHERE &quot;artistId&quot; = &#39;&lt;artistId&gt;&#39;;
+</code></pre>
+<hr>
+<h3>R2 uploads fail with CORS error</h3>
+<p><strong>Symptom:</strong> The browser console shows a CORS error when uploading files directly to R2.</p>
+<p>Add a CORS rule to both R2 buckets (see §16 CORS configuration). The allowed origin must exactly match the domain the user is uploading from.</p>
+<hr>
+<h3><code>prisma migrate dev</code> fails with &quot;drift detected&quot;</h3>
+<p><strong>Symptom:</strong></p>
+<pre><code>Error: P3005 — The database schema is not empty. Read more about how to baseline migrations.
+</code></pre>
+<p>This happens when the database has schema that doesn&#39;t match the migration history (e.g., the DB was created with <code>db push</code> and then you switched to migrations).</p>
+<p>Fix:</p>
+<pre><code class="language-bash"># Mark the current state as the baseline
+npx prisma migrate resolve --applied &quot;0001_initial&quot;
+
+# Then try migrating again
+npx prisma migrate dev
+</code></pre>
+<hr>
+<h3>Worker processes a job but it re-appears as PENDING</h3>
+<p><strong>Symptom:</strong> The same job keeps being picked up repeatedly.</p>
+<p>The job was set to <code>PROCESSING</code> but the worker crashed before completing it. On restart the worker won&#39;t re-claim a <code>PROCESSING</code> job (it only picks up <code>PENDING</code>). Fix by resetting it:</p>
+<pre><code class="language-sql">UPDATE &quot;TranscodeJob&quot;
+SET status = &#39;PENDING&#39;, &quot;startedAt&quot; = NULL
+WHERE status = &#39;PROCESSING&#39;;
+</code></pre>
+<hr>
+<h3>&quot;Prisma Client is not yet initialized&quot; at runtime</h3>
+<p><strong>Symptom:</strong> <code>Error: PrismaClient is not yet initialized — PrismaClient is not exported from generated client</code>.</p>
+<p>Run:</p>
+<pre><code class="language-bash">npm run db:generate
+# or
+npx prisma generate
+</code></pre>
+<p>In Docker, this is handled automatically during the image build. If you see this in Docker, the image needs to be rebuilt:</p>
+<pre><code class="language-bash">docker compose up --build
+</code></pre>
+<hr>
+<h3>Out of memory — worker crashes on large FLAC files</h3>
+<p><strong>Symptom:</strong> Worker process kills itself (exit code 137 in Docker) when processing large files.</p>
+<p>The waveform job loads the entire decoded PCM into memory. A 30-minute FLAC decoded to 44100 Hz mono f32 uses ~1.1 GB of RAM. In production:</p>
+<ul>
+<li>Give the worker container at least 2 GB of RAM</li>
+<li>Docker Compose: <code>mem_limit: 2g</code> under the worker service</li>
+<li>Or set the Node.js heap limit: <code>NODE_OPTIONS=--max-old-space-size=2048 npm run worker</code></li>
+</ul>
+<hr>
+<h2>20. Runbook: Common Operations</h2>
+<h3>Adding a new artist website</h3>
+<ol>
+<li><strong>Create the artist</strong> in the admin panel: <code>vault.yegge.com/admin/artists/new</code><ul>
+<li>Set slug, name, bio</li>
+<li>Upload avatar (optional)</li>
+</ul>
+</li>
+<li><strong>Add domain mappings</strong> under the artist&#39;s settings: e.g. <code>newartist.com</code>, <code>www.newartist.com</code></li>
+<li><strong>Point DNS</strong> — create A records pointing <code>newartist.com</code> to your server&#39;s IP</li>
+<li><strong>Update Nginx</strong> to include the new domain in the <code>server_name</code> directive</li>
+<li><strong>Obtain TLS certificate</strong>: <code>certbot --nginx -d newartist.com -d www.newartist.com</code></li>
+<li><strong>Add R2 CORS rule</strong> — add the new domain to the AllowedOrigins list on both buckets</li>
+<li>Verify by visiting <code>http://newartist.com</code> — you should see the artist homepage</li>
+</ol>
+<hr>
+<h3>Uploading an album</h3>
+<ol>
+<li>Go to <code>vault.yegge.com/admin/artists/[id]</code></li>
+<li>Click <strong>New Album</strong> → fill in title, slug, release year, visibility → Save</li>
+<li>On the album page, click <strong>Add Track</strong> for each track</li>
+<li>For each track:<ul>
+<li>Fill in title and track number</li>
+<li>Click <strong>Upload FLAC</strong> and select the master audio file</li>
+<li>Wait for the upload to complete (the browser uploads directly to R2)</li>
+<li>Click <strong>Confirm Upload</strong></li>
+</ul>
+</li>
+<li>The track now shows &quot;Processing&quot; — the worker will handle transcoding and waveform generation</li>
+<li>Once processing completes, set visibility to <code>PUBLIC</code> if desired</li>
+</ol>
+<hr>
+<h3>Promoting a Collaborator submission</h3>
+<ol>
+<li>Go to <code>vault.yegge.com/admin/review-queue</code></li>
+<li>Find the pending item (track, album, or blog post)</li>
+<li>Click <strong>Review</strong> to see the content</li>
+<li>Click <strong>Approve</strong> (optionally adjusting the target visibility) or <strong>Reject</strong> (with notes)</li>
+<li>Approved content immediately becomes visible to the public</li>
+</ol>
+<hr>
+<h3>Granting VIP access to a listener</h3>
+<ol>
+<li>Have the user sign in with Google OAuth at any artist site</li>
+<li>Go to <code>vault.yegge.com/admin/users</code> and find them by email</li>
+<li>Change their role to <code>VIP</code> (Save)</li>
+<li>Go to the VIP Grants section for that user</li>
+<li>Click <strong>Add Grant</strong> → select the artist → optionally set an expiry date</li>
+<li>The user must sign out and back in to activate the new access</li>
+</ol>
+<hr>
+<h3>Rotating the admin password</h3>
+<ol>
+<li>Set a new <code>ADMIN_PASSWORD</code> in <code>.env</code></li>
+<li>Restart the web server:<pre><code class="language-bash">docker compose restart app
+# or
+pm2 restart platform-web
+</code></pre>
+</li>
+<li>There is no database record to update — the password is checked directly against the env var on every login attempt.</li>
+<li>Existing admin sessions remain valid until their 30-day JWT expiry. To invalidate all sessions immediately, also rotate <code>AUTH_SECRET</code> / <code>NEXTAUTH_SECRET</code> and restart.</li>
+</ol>
+<hr>
+<h3>Backing up the database</h3>
+<pre><code class="language-bash"># Docker Compose
+docker compose exec db pg_dump -U platform platform \
+  | gzip &gt; platform_backup_$(date +%Y%m%d_%H%M%S).sql.gz
+
+# Restore
+gunzip -c platform_backup_20260420_120000.sql.gz \
+  | docker compose exec -T db psql -U platform -d platform
+</code></pre>
+<p>R2 objects are stored durably by Cloudflare (11 nines). The database is the only thing that needs regular backups.</p>
+<hr>
+<h3>Checking which version is deployed</h3>
+<pre><code class="language-bash"># Docker
+docker compose exec app node -e &quot;console.log(process.version)&quot;
+
+# Check Next.js version
+docker compose exec app node -e &quot;const p=require(&#39;./package.json&#39;); console.log(p.dependencies.next)&quot;
+
+# Git commit (if built from a git repo)
+git log --oneline -1
+</code></pre>
+<hr>
+<p><em>Last updated: 2026-04-20</em></p>
+</body></html>

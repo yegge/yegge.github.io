@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Docs Directory | crmbase.net</title>
+    <style>
+        :root {
+            --brand-orange: #ff9800;
+            --bg-dark: #000000;
+            --bg-panel: #111111;
+            --border-color: #333333;
+            --text-main: #eeeeee;
+            --text-muted: #888888;
+            --hover-bg: #222222;
+        }
+
+        body, html {
+            margin: 0; padding: 0; height: 100%;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        header {
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        h1 {
+            color: var(--brand-orange);
+            margin: 0;
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 14px;
+            margin-top: 8px;
+        }
+
+        .breadcrumb {
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        .breadcrumb a {
+            color: var(--brand-orange);
+            text-decoration: none;
+            transition: opacity 0.2s;
+        }
+        
+        .breadcrumb a:hover {
+            text-decoration: underline;
+            opacity: 0.8;
+        }
+
+        .directory-list {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .list-header {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            padding: 12px 20px;
+            background: #181818;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 12px;
+            text-transform: uppercase;
+            font-weight: bold;
+            color: var(--text-muted);
+            letter-spacing: 0.5px;
+        }
+
+        .list-item {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-color);
+            align-items: center;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            color: var(--text-main);
+        }
+
+        .list-item:last-child {
+            border-bottom: none;
+        }
+
+        .list-item:hover {
+            background: var(--hover-bg);
+            padding-left: 24px; /* subtle slide effect */
+            border-left: 3px solid var(--brand-orange);
+        }
+
+        .file-name {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 500;
+        }
+
+        .file-type, .file-size {
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        /* Icons */
+        .icon-html::before { content: "📄"; font-size: 18px; }
+        .icon-txt::before { content: "📝"; font-size: 18px; }
+        .folder-icon::before { content: "📁"; font-size: 16px; }
+
+        /* Accordions */
+        .category-group, .subcategory-group {
+            border-bottom: 1px solid var(--border-color);
+        }
+        .category-group:last-child, .subcategory-group:last-child {
+            border-bottom: none;
+        }
+        .category-header, .subcategory-header {
+            padding: 14px 20px;
+            background: #151515;
+            font-weight: bold;
+            color: var(--brand-orange);
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .subcategory-header {
+            background: #121212;
+            padding-left: 40px;
+            color: #ddd;
+            font-size: 14px;
+        }
+        .category-content .list-item {
+            padding-left: 40px;
+        }
+        .subcategory-content .list-item {
+            padding-left: 60px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div>
+                <h1>/Docs</h1>
+                <div class="subtitle">Published HTML Documents &amp; Storage</div>
+            </div>
+            <div class="breadcrumb">
+                <a href="../index.html">Workspace</a> / Docs
+            </div>
+        </header>
+
+        <div class="directory-list">
+            <div class="list-header">
+                <div>Name</div>
+                <div>Type</div>
+                <div>Size</div>
+            </div><a href="macOS Terminal Commands.html" class="list-item">
+                                <div class="file-name"><span class="icon-html"></span> macOS Terminal Commands.html</div>
+                                <div class="file-type">HTML Document</div>
+                                <div class="file-size">4.4 KB</div>
+                            </a><a href="Sad But True.html" class="list-item">
+                                <div class="file-name"><span class="icon-html"></span> Sad But True.html</div>
+                                <div class="file-type">HTML Document</div>
+                                <div class="file-size">1.1 KB</div>
+                            </a>
+            
+            <a href="Universal Music Vault — Administrator's Guide.html" class="list-item">
+                <div class="file-name"><span class="icon-html"></span> Universal Music Vault — Administrator's Guide.html</div>
+                <div class="file-type">HTML Document</div>
+                <div class="file-size">61.1 KB</div>
+            </a>
+
+            <a href="README.txt" class="list-item">
+                <div class="file-name"><span class="icon-txt"></span> README.txt</div>
+                <div class="file-type">Text File</div>
+                <div class="file-size">84 bytes</div>
+            </a>
+        <div class="category-group" data-category="TECH">
+                                        <div class="category-header"><span class="folder-icon"></span> TECH</div>
+                                        <div class="category-content"><div class="subcategory-group" data-subcategory="macOS">
+                                            <div class="subcategory-header"><span class="folder-icon"></span> macOS</div>
+                                            <div class="subcategory-content"><a href="TECH/macOS/macOS Terminal Commands.html" class="list-item">
+                                <div class="file-name"><span class="icon-html"></span> macOS Terminal Commands.html</div>
+                                <div class="file-type">HTML Document</div>
+                                <div class="file-size">4.4 KB</div>
+                            </a></div>
+                                        </div></div>
+                                    </div></div>
+    </div>
+
+
+</body></html>
